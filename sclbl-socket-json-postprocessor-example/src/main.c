@@ -73,7 +73,7 @@ void printJSONDocument(yyjson_doc *input_document)
     }
 }
 
-void handle_interrupt(int sig)
+void handle_interrupt(int)
 {
     interrupt_flag = true;
 }
