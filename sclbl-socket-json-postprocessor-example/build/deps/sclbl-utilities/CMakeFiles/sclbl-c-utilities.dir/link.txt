@@ -1,2 +1,0 @@
-/usr/bin/ar qc libsclbl-c-utilities.a CMakeFiles/sclbl-c-utilities.dir/src/sclbl_socket_utils.c.o
-/usr/bin/ranlib libsclbl-c-utilities.a

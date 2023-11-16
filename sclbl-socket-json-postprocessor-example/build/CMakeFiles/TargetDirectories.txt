@@ -1,6 +1,0 @@
-/home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example/build/CMakeFiles/postprocessor-example.dir
-/home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example/build/CMakeFiles/edit_cache.dir
-/home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example/build/CMakeFiles/rebuild_cache.dir
-/home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example/build/deps/sclbl-utilities/CMakeFiles/sclbl-c-utilities.dir
-/home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example/build/deps/sclbl-utilities/CMakeFiles/edit_cache.dir
-/home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example/build/deps/sclbl-utilities/CMakeFiles/rebuild_cache.dir
