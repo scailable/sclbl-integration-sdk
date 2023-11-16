@@ -1,0 +1,1 @@
+/usr/bin/cc -g -Wl,--gc-sections -Wl,--as-needed -static -pthread CMakeFiles/postprocessor-example.dir/src/main.c.o CMakeFiles/postprocessor-example.dir/deps/yyjson.c.o -o postprocessor-example  -lm -ldl -lrt deps/sclbl-utilities/libsclbl-c-utilities.a 

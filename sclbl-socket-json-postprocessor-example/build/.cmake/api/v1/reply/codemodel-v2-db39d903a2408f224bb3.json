@@ -1,0 +1,102 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10.2"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "deps/sclbl-utilities",
+					"jsonFile" : "directory-deps.sclbl-utilities-Debug-002f8ed5335031a2b1c0.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.2"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 1,
+					"source" : "deps/sclbl-utilities",
+					"targetIndexes" : 
+					[
+						1
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"childIndexes" : 
+					[
+						1
+					],
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "sclbl-socket-json-postprocessor-example",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						1
+					],
+					"name" : "SclblCUtilities",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						1
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "postprocessor-example::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-postprocessor-example-Debug-4715b0a02c18577b77f9.json",
+					"name" : "postprocessor-example",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "sclbl-c-utilities::@5b44b593fb3135bea527",
+					"jsonFile" : "target-sclbl-c-utilities-Debug-4aadcee80935cb662921.json",
+					"name" : "sclbl-c-utilities",
+					"projectIndex" : 1
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example/build",
+		"source" : "/home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

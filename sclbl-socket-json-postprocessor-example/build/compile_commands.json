@@ -1,0 +1,17 @@
+[
+{
+  "directory": "/home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example/build",
+  "command": "/usr/bin/cc  -I/home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example/include -I/home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example/deps -I/home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example/deps/sclbl-utilities/include -g -funsafe-math-optimizations -s -fno-delete-null-pointer-checks -fno-math-errno -Wno-unknown-pragmas -ffunction-sections -fPIC -Wall -Wextra -Wshadow -Wmissing-declarations -fdata-sections -o CMakeFiles/postprocessor-example.dir/src/main.c.o -c /home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example/src/main.c",
+  "file": "/home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example/src/main.c"
+},
+{
+  "directory": "/home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example/build",
+  "command": "/usr/bin/cc  -I/home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example/include -I/home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example/deps -I/home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example/deps/sclbl-utilities/include -g -funsafe-math-optimizations -s -fno-delete-null-pointer-checks -fno-math-errno -Wno-unknown-pragmas -ffunction-sections -fPIC -Wall -Wextra -Wshadow -Wmissing-declarations -fdata-sections -o CMakeFiles/postprocessor-example.dir/deps/yyjson.c.o -c /home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example/deps/yyjson.c",
+  "file": "/home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example/deps/yyjson.c"
+},
+{
+  "directory": "/home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example/build/deps/sclbl-utilities",
+  "command": "/usr/bin/cc  -I/home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example/deps/sclbl-utilities/include -g -o CMakeFiles/sclbl-c-utilities.dir/src/sclbl_socket_utils.c.o -c /home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example/deps/sclbl-utilities/src/sclbl_socket_utils.c",
+  "file": "/home/josef/sclbl-edge-ai-manager/sclbl-socket-json-postprocessor-example/deps/sclbl-utilities/src/sclbl_socket_utils.c"
+}
+]

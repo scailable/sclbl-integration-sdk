@@ -1,0 +1,7 @@
+{
+    "cmake.configureOnOpen": true,
+    "editor.formatOnSave": true,
+    "files.associations": {
+        "un.h": "c"
+    }
+}
