@@ -35,7 +35,5 @@ target_link_options(postprocessor-example PUBLIC -Wl,--gc-sections -Wl,--as-need
 # Link generic libraries
 target_link_libraries(postprocessor-example m dl rt)
 
-# Add Scailable C Utilities
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/deps/sclbl-utilities)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/deps/sclbl-utilities/include)
+# Link utilities libraries
 target_link_libraries(postprocessor-example sclbl-c-utilities)
