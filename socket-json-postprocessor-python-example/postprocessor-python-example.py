@@ -2,6 +2,7 @@ import json
 import os
 import sys
 import socket
+import signal
 
 # Add the sclbl-utilities python utilities
 script_location = os.path.dirname(os.path.realpath(__file__))
@@ -47,9 +48,6 @@ def main():
         # Send message back to runtime
         communication_utils.sendMessageOverConnection(connection,output_string)
 
-        # Close connection
-        connection.close()
-
 def validateSettings():
     settings = communication_utils.getScailableSettings()
     # Validate postprocessor is defined in 'externalPostprocessors' setting
@@ -70,8 +68,16 @@ def validateSettings():
     if is_assigned == False:
         print("EXAMPLE PLUGIN: Postprocessor started without being assigned to any model. This will probably not work")
 
+def signalHandler(sig,_):
+    print("EXAMPLE PLUGIN: Received interrupt signal: ",sig)
+    sys.exit(0)
+
 if __name__ == "__main__":
     print("EXAMPLE PLUGIN: Input parameters: ", sys.argv)
+    # Parse input arguments
     if len(sys.argv) > 1:
         Postprocessor_Socket_Path = sys.argv[1]
+    # Handle interrupt signals
+    signal.signal(signal.SIGINT,signalHandler)
+    # Start program
     main()
