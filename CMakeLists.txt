@@ -7,4 +7,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/sclbl-utilities)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/sclbl-utilities/include)
 
 # Add Socket Json Postprocessor project
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/sclbl-socket-json-postprocessor-example)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/socket-json-postprocessor-c-example)
+
+# Add Socket Json Postprocessor Python project
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/socket-json-postprocessor-python-example)
