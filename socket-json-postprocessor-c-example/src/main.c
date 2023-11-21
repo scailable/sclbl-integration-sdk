@@ -1,6 +1,7 @@
 // Standard system includes
 #include <stdio.h>
 #include <signal.h>
+#include <unistd.h>
 
 // Local includes
 #include "yyjson.h"
@@ -54,6 +55,12 @@ int main(int argc, char *argv[])
         yyjson_doc_free(input_doc);
 
         sclbl_socket_send_to_socket(connection_fd, output_string, (uint32_t)strlen(output_string));
+
+        // Close connection
+        if (close(connection_fd) == -1)
+        {
+            fprintf(stderr, "EXAMPLE POSTPROCESSOR: Warning: Sender socket close error!\n");
+        }
     }
 
     printf("EXAMPLE POSTPROCESSOR: Exiting.\n");
