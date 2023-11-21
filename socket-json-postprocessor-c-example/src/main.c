@@ -10,7 +10,7 @@
 volatile sig_atomic_t interrupt_flag = false;
 
 // Function forward declarations
-char* processJSONDocument(yyjson_doc *input_document);
+char *processJSONDocument(yyjson_doc *input_document);
 void handle_interrupt(int sig);
 
 int main(int argc, char *argv[])
@@ -48,18 +48,18 @@ int main(int argc, char *argv[])
 
         yyjson_doc *input_doc = yyjson_read(input_buffer, (size_t)message_length, 0);
 
-        char* output_string = processJSONDocument(input_doc);
+        char *output_string = processJSONDocument(input_doc);
 
         // Free document
         yyjson_doc_free(input_doc);
 
-        sclbl_socket_send_to_socket(connection_fd, output_string,(uint32_t) strlen(output_string));
+        sclbl_socket_send_to_socket(connection_fd, output_string, (uint32_t)strlen(output_string));
     }
 
     printf("EXAMPLE POSTPROCESSOR: Exiting.\n");
 }
 
-char* processJSONDocument(yyjson_doc *input_document)
+char *processJSONDocument(yyjson_doc *input_document)
 {
     // Print some debug information
     yyjson_val *document_root = yyjson_doc_get_root(input_document);
@@ -76,15 +76,15 @@ char* processJSONDocument(yyjson_doc *input_document)
     }
 
     // Add some generic information to object
-    yyjson_mut_doc* mut_doc = yyjson_doc_mut_copy(input_document,NULL);
+    yyjson_mut_doc *mut_doc = yyjson_doc_mut_copy(input_document, NULL);
 
-    yyjson_mut_val* root_mut = yyjson_mut_doc_get_root(mut_doc);
-    yyjson_mut_val* output_object_mut = yyjson_mut_obj_get(root_mut,"output");
+    yyjson_mut_val *root_mut = yyjson_mut_doc_get_root(mut_doc);
+    yyjson_mut_val *output_object_mut = yyjson_mut_obj_get(root_mut, "output");
 
-    yyjson_mut_obj_add_str(mut_doc,output_object_mut,"examplePostProcessor","Processed");
+    yyjson_mut_obj_add_str(mut_doc, output_object_mut, "examplePostProcessor", "Processed");
 
     // Write document to string
-    char* output_document = yyjson_mut_write(mut_doc,0,NULL);
+    char *output_document = yyjson_mut_write(mut_doc, 0, NULL);
 
     yyjson_mut_doc_free(mut_doc);
 
