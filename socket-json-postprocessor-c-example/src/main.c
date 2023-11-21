@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
         // Free document
         yyjson_doc_free(input_doc);
 
-        sclbl_socket_send_to_socket(connection_fd, output_string, message_length);
+        sclbl_socket_send_to_socket(connection_fd, output_string,(uint32_t) strlen(output_string));
     }
 
     printf("EXAMPLE POSTPROCESSOR: Exiting.\n");
