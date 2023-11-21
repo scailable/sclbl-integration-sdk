@@ -14,8 +14,10 @@ volatile sig_atomic_t interrupt_flag = false;
 char *processJSONDocument(yyjson_doc *input_document);
 void handle_interrupt(int sig);
 
+// Main function, the entry point of the application
 int main(int argc, char *argv[])
 {
+    // Check for the correct number of command line arguments
     if (argc != 2)
     {
         printf("EXAMPLE POSTPROCESSOR: Started with incorrect command line arguments.\n");
@@ -33,30 +35,34 @@ int main(int argc, char *argv[])
     size_t allocated_buffer_size = 0;
     uint32_t message_length;
 
+    // Create a listener socket
     int socket_fd = sclbl_socket_create_listener(socket_path);
 
-    // While no interrupt signal received
+    // Main loop: continues until an interrupt signal is received
     while (interrupt_flag == false)
     {
+        // Wait for a message on the socket
         int connection_fd = sclbl_socket_await_message(socket_fd, &allocated_buffer_size, &input_buffer, &message_length);
 
+        // If connection times out, it continues to wait for the message again
         if (connection_fd == -1)
         {
-            // Connection timed out, continue to wait for message again.
-            // Useful to test if program should terminate and break
             continue;
         }
 
+        // Parse input buffer into a JSON document
         yyjson_doc *input_doc = yyjson_read(input_buffer, (size_t)message_length, 0);
 
+        // Process the JSON document
         char *output_string = processJSONDocument(input_doc);
 
-        // Free document
+        // Free the input document after processing
         yyjson_doc_free(input_doc);
 
+        // Send the processed output back to the socket
         sclbl_socket_send_to_socket(connection_fd, output_string, (uint32_t)strlen(output_string));
 
-        // Close connection
+        // Close the connection
         if (close(connection_fd) == -1)
         {
             fprintf(stderr, "EXAMPLE POSTPROCESSOR: Warning: Sender socket close error!\n");
@@ -66,15 +72,18 @@ int main(int argc, char *argv[])
     printf("EXAMPLE POSTPROCESSOR: Exiting.\n");
 }
 
+// Function to process a JSON document
 char *processJSONDocument(yyjson_doc *input_document)
 {
-    // Print some debug information
+    // Get the root of the JSON document
     yyjson_val *document_root = yyjson_doc_get_root(input_document);
 
+    // Get the "output" object from the JSON document
     yyjson_val *output_object = yyjson_obj_get(document_root, "output");
 
     printf("EXAMPLE POSTPROCESSOR: Received document output object has keys:\n");
 
+    // Loop over the keys in the "output" object and print them
     size_t idx, max;
     yyjson_val *key, *val;
     yyjson_obj_foreach(output_object, idx, max, key, val)
@@ -82,25 +91,28 @@ char *processJSONDocument(yyjson_doc *input_document)
         printf("\tEXAMPLE POSTPROCESSOR: %s\n", yyjson_get_str(key));
     }
 
-    // Add some generic information to object
+    // Create a mutable copy of the input document
     yyjson_mut_doc *mut_doc = yyjson_doc_mut_copy(input_document, NULL);
 
+    // Get the mutable "output" object from the mutable copy
     yyjson_mut_val *root_mut = yyjson_mut_doc_get_root(mut_doc);
     yyjson_mut_val *output_object_mut = yyjson_mut_obj_get(root_mut, "output");
 
+    // Add a new key-value pair to the "output" object
     yyjson_mut_obj_add_str(mut_doc, output_object_mut, "examplePostProcessor", "Processed");
 
-    // Write document to string
+    // Convert the mutable document back to a string
     char *output_document = yyjson_mut_write(mut_doc, 0, NULL);
 
+    // Free the mutable document
     yyjson_mut_doc_free(mut_doc);
 
     return output_document;
 }
 
+// Function to handle interrupt signals
 void handle_interrupt(int signal)
 {
-    // Get rid of compile warnings
-    (void)(signal);
+    // Set the interrupt flag to true on receiving an interrupt signal
     interrupt_flag = true;
 }
