@@ -10,12 +10,11 @@
 volatile sig_atomic_t interrupt_flag = false;
 
 // Function forward declarations
-void printJSONDocument(yyjson_doc *input_document);
+char* processJSONDocument(yyjson_doc *input_document);
 void handle_interrupt(int sig);
 
 int main(int argc, char *argv[])
 {
-    // Get rid of compilation warnings
     if (argc != 2)
     {
         printf("EXAMPLE POSTPROCESSOR: Started with incorrect command line arguments.\n");
@@ -49,16 +48,20 @@ int main(int argc, char *argv[])
 
         yyjson_doc *input_doc = yyjson_read(input_buffer, (size_t)message_length, 0);
 
-        printJSONDocument(input_doc);
+        char* output_string = processJSONDocument(input_doc);
 
-        sclbl_socket_send_to_socket(connection_fd, input_buffer, message_length);
+        // Free document
+        yyjson_doc_free(input_doc);
+
+        sclbl_socket_send_to_socket(connection_fd, output_string, message_length);
     }
 
     printf("EXAMPLE POSTPROCESSOR: Exiting.\n");
 }
 
-void printJSONDocument(yyjson_doc *input_document)
+char* processJSONDocument(yyjson_doc *input_document)
 {
+    // Print some debug information
     yyjson_val *document_root = yyjson_doc_get_root(input_document);
 
     yyjson_val *output_object = yyjson_obj_get(document_root, "output");
@@ -69,11 +72,28 @@ void printJSONDocument(yyjson_doc *input_document)
     yyjson_val *key, *val;
     yyjson_obj_foreach(output_object, idx, max, key, val)
     {
-        printf("EXAMPLE POSTPROCESSOR: %s\n", yyjson_get_str(key));
+        printf("\tEXAMPLE POSTPROCESSOR: %s\n", yyjson_get_str(key));
     }
+
+    // Add some generic information to object
+    yyjson_mut_doc* mut_doc = yyjson_doc_mut_copy(input_document,NULL);
+
+    yyjson_mut_val* root_mut = yyjson_mut_doc_get_root(mut_doc);
+    yyjson_mut_val* output_object_mut = yyjson_mut_obj_get(root_mut,"output");
+
+    yyjson_mut_obj_add_str(mut_doc,output_object_mut,"examplePostProcessor","Processed");
+
+    // Write document to string
+    char* output_document = yyjson_mut_write(mut_doc,0,NULL);
+
+    yyjson_mut_doc_free(mut_doc);
+
+    return output_document;
 }
 
-void handle_interrupt(int)
+void handle_interrupt(int signal)
 {
+    // Get rid of compile warnings
+    (void)(signal);
     interrupt_flag = true;
 }
