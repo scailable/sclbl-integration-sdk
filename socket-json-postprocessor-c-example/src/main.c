@@ -10,8 +10,27 @@
 // Flag to keep track of interrupts
 volatile sig_atomic_t interrupt_flag = false;
 
-// Function forward declarations
+/**
+ * @brief A function to process the Json document received from the Scailable Runtime and returns a modified JSON.
+ *
+ * This is the function you are likely to replace with your own code. For this example the function adds an
+ * additional field to the JSON's "output" object and returns the result.
+ *
+ * @param input_document The json parsed document
+ * @return char* The modified json string
+ */
 char *processJSONDocument(yyjson_doc *input_document);
+/**
+ * @brief Function to handle interrupt signals
+ *
+ * When the Scailable Runtime is stopped, it sends an interrupt signal to all postprocessors it started
+ * and waits for them to exit.
+ *
+ * This function sets a global interrupt flag which stops the socket listener loop. After the loop is broken
+ * the socket is closed and the application exits gracefully.
+ *
+ * @param sig
+ */
 void handle_interrupt(int sig);
 
 // Main function, the entry point of the application
