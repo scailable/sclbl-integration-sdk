@@ -11,3 +11,13 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/socket-json-postprocessor-c-example
 
 # Add Socket Json Postprocessor Python project
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/socket-json-postprocessor-python-example)
+
+## Add installation option
+install(TARGETS 
+            postprocessor-example
+        DESTINATION /opt/sclbl/postprocessors/
+)
+install(PROGRAMS
+            ${CMAKE_CURRENT_BINARY_DIR}/socket-json-postprocessor-python-example/postprocessor-python-example
+        DESTINATION /opt/sclbl/postprocessors/
+        )

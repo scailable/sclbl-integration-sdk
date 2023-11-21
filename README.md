@@ -47,6 +47,12 @@ make
 
 This will build the default target, which includes the all the example applications.
 
+To install the generated postprocessor examples to the default postprocessors folder:
+
+```
+cmake --build . --target install
+```
+
 ## Licence
 
 Copyright 2022, Scailable, All rights reserved.
