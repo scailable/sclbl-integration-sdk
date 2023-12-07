@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
         yyjson_doc_free(input_doc);
 
         // Send the processed output back to the socket
-        sclbl_socket_send_to_socket(connection_fd, output_string, (uint32_t)strlen(output_string));
+        sclbl_socket_send_to_connection(connection_fd, output_string, (uint32_t)strlen(output_string));
 
         // Close the connection
         if (close(connection_fd) == -1)
