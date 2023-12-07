@@ -3,6 +3,8 @@ import os
 import sys
 import socket
 import signal
+import sysv_ipc as ipc
+import struct
 
 # Add the sclbl-utilities python utilities
 script_location = os.path.dirname(os.path.realpath(__file__))
@@ -13,16 +15,30 @@ import communication_utils
 # This is used to match the definition of the postprocessor with routing.
 Postprocessor_Name = "Python-Example-Postprocessor"
 
-# The socket this postprocessor will listen on. 
+# The socket this postprocessor will listen on.
 # This is always given as the first argument when the process is started
 # But it can be manually defined as well, as long as it is the same as the socket path in the runtime settings
 Postprocessor_Socket_Path = "/opt/sclbl/sockets/python-example-postprocessor.sock"
+
+
+def getImageFromSHM(shm_key: int, shm_size: int):
+    shm = ipc.SharedMemory(shm_key, 0, 0)
+    size_buf = shm.read(4, offset=1)
+    image_size = struct.unpack("<I", size_buf)[0]
+    print(image_size, shm_size)
+    buf = shm.read(image_size, offset=5)
+    f = open("out.jpg", "wb")
+    f.write(buf)
+    shm.detach()
+
 
 def main():
     # Validate running state
     status = communication_utils.getScailableStatus()
     if status["Running"] == False:
-        print("EXAMPLE PLUGIN: Postprocessor started without the Scailable Runtime running. This will probably not work.")
+        print(
+            "EXAMPLE PLUGIN: Postprocessor started without the Scailable Runtime running. This will probably not work."
+        )
     # Validate settings
     validateSettings()
 
@@ -32,12 +48,26 @@ def main():
     while True:
         # Wait for input message from runtime
         try:
-            input_message,connection = communication_utils.waitForSocketMessage(server)
+            input_message, connection = communication_utils.waitForSocketMessage(server)
         except socket.timeout:
             # Request timed out. Continue waiting
             continue
 
-        print("EXAMPLE PLUGIN: Received input message: ",input_message)
+        # Since we're also expecting an image, receive the image header
+        try:
+            image_header = communication_utils.receiveMessageOverConnection(connection)
+        except socket.timeout:
+            # Did not receive image header
+            print(
+                "EXAMPLE PLUGIN: Did not receive image header. Are the settings correct?"
+            )
+            continue
+
+        image_header = json.loads(image_header)
+        print(image_header)
+        getImageFromSHM(image_header["SHMID"], image_header["SHMSize"])
+
+        print("EXAMPLE PLUGIN: Received input message: ", input_message)
 
         # Parse input message
         input_object = json.loads(input_message)
@@ -49,7 +79,8 @@ def main():
         output_string = json.dumps(input_object)
 
         # Send message back to runtime
-        communication_utils.sendMessageOverConnection(connection,output_string)
+        communication_utils.sendMessageOverConnection(connection, output_string)
+
 
 def validateSettings():
     settings = communication_utils.getScailableSettings()
@@ -61,7 +92,9 @@ def validateSettings():
         if postprocessor["Name"] == Postprocessor_Name:
             break
     else:
-        print("EXAMPLE PLUGIN: Postprocessor started without being defined in 'externalPostprocessors' setting. This will probably not work")
+        print(
+            "EXAMPLE PLUGIN: Postprocessor started without being defined in 'externalPostprocessors' setting. This will probably not work"
+        )
     # Validate postprocessor is assigned to a model
     is_assigned = False
     for model_data in settings["module"]["AssignedModels"]:
@@ -69,11 +102,15 @@ def validateSettings():
             if assigned_postprocessor == Postprocessor_Name:
                 is_assigned = True
     if is_assigned == False:
-        print("EXAMPLE PLUGIN: Postprocessor started without being assigned to any model. This will probably not work")
+        print(
+            "EXAMPLE PLUGIN: Postprocessor started without being assigned to any model. This will probably not work"
+        )
 
-def signalHandler(sig,_):
-    print("EXAMPLE PLUGIN: Received interrupt signal: ",sig)
+
+def signalHandler(sig, _):
+    print("EXAMPLE PLUGIN: Received interrupt signal: ", sig)
     sys.exit(0)
+
 
 if __name__ == "__main__":
     print("EXAMPLE PLUGIN: Input parameters: ", sys.argv)
@@ -81,6 +118,6 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         Postprocessor_Socket_Path = sys.argv[1]
     # Handle interrupt signals
-    signal.signal(signal.SIGINT,signalHandler)
+    signal.signal(signal.SIGINT, signalHandler)
     # Start program
     main()
