@@ -3,8 +3,7 @@ import os
 import sys
 import socket
 import signal
-import sysv_ipc as ipc
-import struct
+from PIL import Image
 
 # Add the sclbl-utilities python utilities
 script_location = os.path.dirname(os.path.realpath(__file__))
@@ -21,15 +20,15 @@ Postprocessor_Name = "Python-Example-Postprocessor"
 Postprocessor_Socket_Path = "/opt/sclbl/sockets/python-example-postprocessor.sock"
 
 
-def getImageFromSHM(shm_key: int, shm_size: int):
-    shm = ipc.SharedMemory(shm_key, 0, 0)
-    size_buf = shm.read(4, offset=1)
-    image_size = struct.unpack("<I", size_buf)[0]
-    print(image_size, shm_size)
-    buf = shm.read(image_size, offset=5)
-    f = open("out.jpg", "wb")
-    f.write(buf)
-    shm.detach()
+def parseImageFromSHM(shm_key: int, width: int, height: int, channels: int):
+    image_data = communication_utils.read_shm(shm_key)
+
+    # Generate image
+    if channels == 3:
+        img = Image.frombytes("RGB", (width, height), image_data)
+    else:
+        img = Image.frombytes("L", (width, height), image_data)
+    img.save("out.png")
 
 
 def main():
@@ -65,7 +64,12 @@ def main():
 
         image_header = json.loads(image_header)
         print(image_header)
-        getImageFromSHM(image_header["SHMID"], image_header["SHMSize"])
+        parseImageFromSHM(
+            image_header["SHMKey"],
+            image_header["Width"],
+            image_header["Height"],
+            image_header["Channels"],
+        )
 
         print("EXAMPLE PLUGIN: Received input message: ", input_message)
 
