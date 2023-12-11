@@ -1,7 +1,7 @@
 
 cmake_minimum_required(VERSION 3.10.2)
 
-project(sclbl-socket-json-postprocessor-example)
+project(sclbl-socket-c-postprocessor-example)
 
 # Generate compile commands
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

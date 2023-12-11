@@ -9,15 +9,19 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/sclbl-utilities/include)
 # Add Socket Json Postprocessor project
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/socket-json-postprocessor-c-example)
 
+# Add Socket C Image Postprocessor project
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/socket-json-postprocessor-c-image-example)
+
 # Add Socket Json Postprocessor Python project
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/socket-json-postprocessor-python-example)
 
-# Add Socket Json Postprocessor Python project
+# Add Socket Json Image Postprocessor Python project
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/socket-json-postprocessor-python-image-example)
 
 ## Add installation option
 install(TARGETS 
             postprocessor-example
+            postprocessor-tensor-example
         DESTINATION /opt/sclbl/postprocessors/
 )
 install(PROGRAMS

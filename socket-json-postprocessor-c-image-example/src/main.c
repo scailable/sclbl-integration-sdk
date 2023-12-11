@@ -1,6 +1,7 @@
 // Standard system includes
 #include <signal.h>
 #include <stdio.h>
+#include <sys/shm.h>
 #include <unistd.h>
 
 // Local includes
@@ -19,7 +20,8 @@ volatile sig_atomic_t interrupt_flag = false;
  * @param input_document The json parsed document
  * @return char* The modified json string
  */
-static char *processJSONDocument( yyjson_doc *input_document );
+static char *processJSONDocument( const char *input_buffer, size_t message_length );
+static void processInputTensor( const char *input_buffer, size_t message_length );
 /**
  * @brief Function to handle interrupt signals
  *
@@ -65,14 +67,15 @@ int main( int argc, char *argv[] ) {
             continue;
         }
 
-        // Parse input buffer into a JSON document
-        yyjson_doc *input_doc = yyjson_read( input_buffer, (size_t) message_length, 0 );
-
         // Process the JSON document
-        char *output_string = processJSONDocument( input_doc );
+        char *output_string = processJSONDocument( input_buffer, (size_t) message_length );
 
-        // Free the input document after processing
-        yyjson_doc_free( input_doc );
+        // Since we're expecting input tensor, read data header
+        sclbl_socket_receive_on_connection( connection_fd, &allocated_buffer_size, &input_buffer, &message_length );
+        printf( "EXAMPLE PLUGIN: Received header %s\n", input_buffer );
+
+        // Parse image header and handle image
+        processInputTensor( input_buffer, (size_t) message_length );
 
         // Send the processed output back to the socket
         sclbl_socket_send_to_connection( connection_fd, output_string, (uint32_t) strlen( output_string ) );
@@ -83,11 +86,15 @@ int main( int argc, char *argv[] ) {
         }
     }
 
+    free( input_buffer );
     printf( "EXAMPLE POSTPROCESSOR: Exiting.\n" );
 }
 
 // Function to process a JSON document
-char *processJSONDocument( yyjson_doc *input_document ) {
+char *processJSONDocument( const char *input_buffer, size_t message_length ) {
+    // Parse input buffer into a JSON document
+    yyjson_doc *input_document = yyjson_read( input_buffer, (size_t) message_length, 0 );
+
     // Get the root of the JSON document
     yyjson_val *document_root = yyjson_doc_get_root( input_document );
 
@@ -114,12 +121,57 @@ char *processJSONDocument( yyjson_doc *input_document ) {
     yyjson_mut_obj_add_str( mut_doc, output_object_mut, "examplePostProcessor", "Processed" );
 
     // Convert the mutable document back to a string
-    char *output_document = yyjson_mut_write( mut_doc, 0, NULL );
+    char *output_string = yyjson_mut_write( mut_doc, 0, NULL );
 
     // Free the mutable document
     yyjson_mut_doc_free( mut_doc );
 
-    return output_document;
+    // Free the input document after processing
+    yyjson_doc_free( input_document );
+
+    return output_string;
+}
+
+void *sclbl_shm_read( int shm_id, size_t *data_length, char **payload_data ) {
+    void *shared_data = shmat( shm_id, NULL, 0 );
+    // The first 4 bytes of the shared memory is always the size of the tensor
+    uint32_t size;
+    memcpy( &size, shared_data, sizeof( uint32_t ) );
+    *data_length = (size_t) size;
+    // Return pointer to the payload data after the size header
+    *payload_data = (char *) shared_data + sizeof( uint32_t );
+    // Return pointer to data after size
+    return shared_data;
+}
+
+void sclbl_shm_close( void *memory_address ) {
+    // Detach memory from this process
+    shmdt( memory_address );
+}
+
+void processInputTensor( const char *input_buffer, size_t message_length ) {
+    // Parse input buffer into a JSON document
+    yyjson_doc *input_document = yyjson_read( input_buffer, (size_t) message_length, 0 );
+    yyjson_val *root = yyjson_doc_get_root( input_document );
+
+    uint64_t shm_id = yyjson_get_uint( yyjson_obj_get( root, "SHMID" ) );
+    size_t tensor_size;
+    char *tensor_data;
+    void *shared_data = sclbl_shm_read( shm_id, &tensor_size, &tensor_data );
+
+    uint64_t height = yyjson_get_uint( yyjson_obj_get( root, "Height" ) );
+    uint64_t width = yyjson_get_uint( yyjson_obj_get( root, "Width" ) );
+    uint64_t channels = yyjson_get_uint( yyjson_obj_get( root, "Channels" ) );
+
+    size_t actual_size = height * width * channels;
+    printf( "EXAMPLE PLUGIN: Read size: %zu Actual size: %zu\n", tensor_size, actual_size );
+
+    // Invert image
+    for ( size_t index = 0; index < tensor_size; index++ ) {
+        tensor_data[index] = 255 - tensor_data[index];
+    }
+
+    sclbl_shm_close( shared_data );
 }
 
 // Function to handle interrupt signals
