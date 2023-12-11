@@ -1,4 +1,2 @@
 pyinstaller
-requests
-sysv_ipc
 pillow
