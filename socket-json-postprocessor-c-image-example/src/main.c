@@ -5,6 +5,7 @@
 #include <unistd.h>
 
 // Local includes
+#include "sclbl_shm_utils.h"
 #include "sclbl_socket_utils.h"
 #include "yyjson.h"
 
@@ -130,23 +131,6 @@ char *processJSONDocument( const char *input_buffer, size_t message_length ) {
     yyjson_doc_free( input_document );
 
     return output_string;
-}
-
-void *sclbl_shm_read( int shm_id, size_t *data_length, char **payload_data ) {
-    void *shared_data = shmat( shm_id, NULL, 0 );
-    // The first 4 bytes of the shared memory is always the size of the tensor
-    uint32_t size;
-    memcpy( &size, shared_data, sizeof( uint32_t ) );
-    *data_length = (size_t) size;
-    // Return pointer to the payload data after the size header
-    *payload_data = (char *) shared_data + sizeof( uint32_t );
-    // Return pointer to data after size
-    return shared_data;
-}
-
-void sclbl_shm_close( void *memory_address ) {
-    // Detach memory from this process
-    shmdt( memory_address );
 }
 
 void processInputTensor( const char *input_buffer, size_t message_length ) {
