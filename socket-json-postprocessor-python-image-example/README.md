@@ -1,7 +1,7 @@
 Socket Json Postprocessor Python Example
 =========================
 
-This example application provides an example on how to create a Python based postprocessor that can be integrated with the Scailable Edge AI Manager.
+This example application provides an example on how to create a Python based image postprocessor that can be integrated with the Scailable Edge AI Manager.
 
 # Json Postprocessors Control Flow
 
@@ -10,6 +10,24 @@ The normal control flow of a Json postprocessor is to receive a Json string repr
 An external postprocessor can parse the incoming Json string, do analysis, optionally alter it, and return it. The alterations made by an external postprocessor will be kept and sent to the configured endpoint by the Edge AI Manager.
 
 An external postprocessor is a standalone application which is expected to receive these Json strings and return a similar Json string. Instructions can be added to the Edge AI Manager settings file to handle executing and terminating the application.
+
+
+## Image Header
+
+This postprocessor additionally receives an image header Json string containing information about the input tensor the runtime used to produce the inference results. This header is sent after the inference results Json string and contains information about the input tensor and details which can be used to access the raw data.
+
+Schema:
+```json
+{
+    "Width":    <int>,
+    "Height":   <int>,
+    "Channels": <int>,
+    "SHMKey":   <int>,
+    "SHMID":    <int>
+}
+```
+
+The "SHMKey" or "SHMID" fields can be used to attach a shared memory segment to the postprocessor. The postprocessor can then do additional analysis on the input tensor. The postprocessor can also optionally alter the data, however it is currently not supported to change the size of the tensor.
 
 # How to use
 

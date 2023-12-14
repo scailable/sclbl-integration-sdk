@@ -60,27 +60,33 @@ Copyright 2022, Scailable, All rights reserved.
 ## Directory structure
 
 ```
+.
 ├── CMakeLists.txt
 ├── README.md
-├── sclbl-utilities
-│   ├── CMakeLists.txt
-│   ├── README.md
-│   ├── include
-│   │   └── sclbl_socket_utils.h
-│   ├── python-utilities
-│   │   └── communication_utils.py
-│   └── src
-│       └── sclbl_socket_utils.c
 ├── socket-json-postprocessor-c-example
 │   ├── CMakeLists.txt
+│   ├── README.md
 │   ├── deps
 │   │   ├── yyjson.c
 │   │   └── yyjson.h
 │   └── src
 │       └── main.c
-└── socket-json-postprocessor-python-example
+├── socket-json-postprocessor-c-image-example
+│   ├── CMakeLists.txt
+│   ├── README.md
+│   ├── deps
+│   │   ├── yyjson.c
+│   │   └── yyjson.h
+│   └── src
+│       └── main.c
+├── socket-json-postprocessor-python-example
+│   ├── CMakeLists.txt
+│   ├── README.md
+│   ├── postprocessor-python-example.py
+│   └── requirements.txt
+└── socket-json-postprocessor-python-image-example
     ├── CMakeLists.txt
-    ├── postprocessor-python-example.py
-    ├── postprocessor-python-example.spec
+    ├── README.md
+    ├── postprocessor-python-image-example.py
     └── requirements.txt
 ```
