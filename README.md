@@ -13,8 +13,8 @@ These applications can be compiled on any architecture natively in a Linux envir
 
 To compile, some software packages are required. These can be installed by running:
 
-- cmake
-- g++
+- sudp apt install cmake
+- sudp apt install g++
 
 Also make sure that all of these are accessible from PATH.
 

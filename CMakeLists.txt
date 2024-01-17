@@ -9,6 +9,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/sclbl-utilities/include)
 # Add Socket Json Postprocessor project
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/socket-json-postprocessor-c-example)
 
+# Add Socket MsgPack Postprocessor project
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/socket-msgpack-postprocessor-c-example)
+
 # Add Socket C Image Postprocessor project
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/socket-json-postprocessor-c-image-example)
 
@@ -18,14 +21,19 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/socket-json-postprocessor-python-ex
 # Add Socket Json Image Postprocessor Python project
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/socket-json-postprocessor-python-image-example)
 
-## Add installation option
-install(TARGETS 
-            postprocessor-example
-            postprocessor-tensor-example
-        DESTINATION /opt/sclbl/postprocessors/
+# Add Socket MsgPack Image Postprocessor Python project
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/socket-msgpack-postprocessor-python-example)
+
+# # Add installation option
+install(TARGETS
+    postprocessor-example
+    postprocessor-tensor-example
+    postprocessor-msgpack-example
+    DESTINATION /opt/sclbl/postprocessors/
 )
 install(PROGRAMS
-            ${CMAKE_CURRENT_BINARY_DIR}/socket-json-postprocessor-python-example/postprocessor-python-example
-            ${CMAKE_CURRENT_BINARY_DIR}/socket-json-postprocessor-python-image-example/postprocessor-python-image-example
-        DESTINATION /opt/sclbl/postprocessors/
-        )
+    ${CMAKE_CURRENT_BINARY_DIR}/socket-json-postprocessor-python-example/postprocessor-python-example
+    ${CMAKE_CURRENT_BINARY_DIR}/socket-json-postprocessor-python-image-example/postprocessor-python-image-example
+    ${CMAKE_CURRENT_BINARY_DIR}/socket-msgpack-postprocessor-python-example/postprocessor-msgpack-python-example
+    DESTINATION /opt/sclbl/postprocessors/
+)
