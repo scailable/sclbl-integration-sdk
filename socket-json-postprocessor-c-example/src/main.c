@@ -77,6 +77,9 @@ int main( int argc, char *argv[] ) {
         // Send the processed output back to the socket
         sclbl_socket_send_to_connection( connection_fd, output_string, (uint32_t) strlen( output_string ) );
 
+        // Free the output string after it has been sent to the Scailable runtime
+        free( output_string );
+
         // Close the connection
         if ( close( connection_fd ) == -1 ) {
             fprintf( stderr, "EXAMPLE POSTPROCESSOR: Warning: Sender socket close error!\n" );
@@ -111,7 +114,7 @@ char *processJSONDocument( yyjson_doc *input_document ) {
     yyjson_mut_val *output_object_mut = yyjson_mut_obj_get( root_mut, "output" );
 
     // Add a new key-value pair to the "output" object
-    yyjson_mut_obj_add_str( mut_doc, output_object_mut, "examplePostProcessor", "Processed" );
+    yyjson_mut_obj_add_str( mut_doc, output_object_mut, "C-Json-Socket-Postprocessor", "Processed" );
 
     // Convert the mutable document back to a string
     char *output_document = yyjson_mut_write( mut_doc, 0, NULL );

@@ -1,8 +1,8 @@
-import json
 import os
 import sys
 import socket
 import signal
+import msgpack
 
 # Add the sclbl-utilities python utilities
 script_location = os.path.dirname(os.path.realpath(__file__))
@@ -43,19 +43,39 @@ def main():
         print("EXAMPLE PLUGIN: Received input message: ", input_message)
 
         # Parse input message
-        input_object = json.loads(input_message.decode("utf-8"))
+        input_object = msgpack.unpackb(input_message)
 
-        # Alter message
-        input_object["output"]["Python-Json-Socket-Postprocessor"] = "Processed"
+        print("Unpacked ", input_object)
+
+        # Data Types
+        # 1:  //FLOAT
+        # 2:  //UINT8
+        # 3:  //INT8
+        # 4:  //UINT16
+        # 5:  //INT16
+        # 6:  //INT32
+        # 7:  //INT64
+        # 8:  //STRING
+        # 9:  //BOOL
+        # 11: //DOUBLE
+        # 12: //UINT32
+        # 13: //UINT64
+
+        # Add extra output
+        input_object["Outputs"][
+            "Python-MsgPack-Socket-Postprocessor"
+        ] = "Processed".encode()
+        input_object["OutputRanks"].append(1)
+        input_object["OutputShapes"].append([9])
+        input_object["OutputDataTypes"].append(8)
+
+        print("Packing ", input_object)
 
         # Write object back to string
-        output_string = json.dumps(input_object)
-
-        # Convert the message to bytes
-        message_bytes = bytes(output_string, "utf-8")
+        output_message = msgpack.packb(input_object, use_bin_type=True)
 
         # Send message back to runtime
-        communication_utils.sendMessageOverConnection(connection, message_bytes)
+        communication_utils.sendMessageOverConnection(connection, output_message)
 
 
 def validateSettings():

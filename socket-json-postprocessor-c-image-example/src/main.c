@@ -119,7 +119,7 @@ char *processJSONDocument( const char *input_buffer, size_t message_length ) {
     yyjson_mut_val *output_object_mut = yyjson_mut_obj_get( root_mut, "output" );
 
     // Add a new key-value pair to the "output" object
-    yyjson_mut_obj_add_str( mut_doc, output_object_mut, "examplePostProcessor", "Processed" );
+    yyjson_mut_obj_add_str( mut_doc, output_object_mut, "C-Json-Image-Socket-Postprocessor", "Processed" );
 
     // Convert the mutable document back to a string
     char *output_string = yyjson_mut_write( mut_doc, 0, NULL );

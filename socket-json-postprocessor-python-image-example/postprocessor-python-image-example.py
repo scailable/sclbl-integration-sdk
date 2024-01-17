@@ -62,7 +62,7 @@ def main():
             )
             continue
 
-        image_header = json.loads(image_header)
+        image_header = json.loads(image_header.decode("utf-8"))
         print(image_header)
         parseImageFromSHM(
             image_header["SHMKey"],
@@ -74,16 +74,19 @@ def main():
         print("EXAMPLE PLUGIN: Received input message: ", input_message)
 
         # Parse input message
-        input_object = json.loads(input_message)
+        input_object = json.loads(input_message.decode("utf-8"))
 
         # Alter message
-        input_object["output"]["examplePostProcessor"] = "Processed"
+        input_object["output"]["Python-Json-Image-Socket-Postprocessor"] = "Processed"
 
         # Write object back to string
         output_string = json.dumps(input_object)
 
+        # Convert the message to bytes
+        message_bytes = bytes(output_string, "utf-8")
+
         # Send message back to runtime
-        communication_utils.sendMessageOverConnection(connection, output_string)
+        communication_utils.sendMessageOverConnection(connection, message_bytes)
 
 
 def validateSettings():

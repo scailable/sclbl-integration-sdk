@@ -24,7 +24,9 @@ Add the external postprocessor definition to the settings file at `/opt/sclbl/et
     {
         "Name":"Example-Postprocessor",
         "Command":"/opt/sclbl/postprocessors/postprocessor-example",
-        "SocketPath":"/opt/sclbl/sockets/example-postprocessor.sock"
+        "SocketPath":"/opt/sclbl/sockets/example-postprocessor.sock",
+        "InputDataFormat":"Json",
+        "ReceiveInputTensor": 0
     }
 ]
 ```
@@ -33,6 +35,8 @@ This tells the Edge AI Manager about the postprocessor:
 - **Name** gives the postprocesor a name so it can be routed to later
 - **Command** defines how to start the postprocessor
 - **SocketPath** tells the AI Manager where to send data to so the external postprocessor will receive it
+- **InputDataFormat** tells the AI Manager that this postprocessor expects data in Json format
+- **ReceiveInputTensor** tells the AI Manager if this postprocessor expects information to access the raw input tensor data
 
 The socket path is always given as the first command line argument when the application is started. It is therefore best practice for the external postprocessor application to read its socket path from here, instead of defining the data twice. A convience directory is created with the Edge AI Manager application is created for this purpose at `/opt/sclbl/sockets`.
 
