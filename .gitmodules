@@ -1,3 +1,5 @@
 [submodule "sclbl-utilities"]
 	path = sclbl-utilities
 	url = git@gitlab.com:scailable/infra-projects/sclbl-utilities.git
+	branch = main
+	update = rebase
