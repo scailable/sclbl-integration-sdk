@@ -4,6 +4,7 @@ import sys
 import socket
 import signal
 from PIL import Image
+import msgpack
 
 # Add the sclbl-utilities python utilities
 script_location = os.path.dirname(os.path.realpath(__file__))
@@ -23,24 +24,14 @@ Postprocessor_Socket_Path = "/opt/sclbl/sockets/python-example-postprocessor.soc
 def parseImageFromSHM(shm_key: int, width: int, height: int, channels: int):
     image_data = communication_utils.read_shm(shm_key)
 
-    # Generate image
-    if channels == 3:
-        img = Image.frombytes("RGB", (width, height), image_data)
-    else:
-        img = Image.frombytes("L", (width, height), image_data)
-    img.save("out.png")
+    cumulative = 0
+    for b in image_data:
+        cumulative += b
+
+    return cumulative
 
 
 def main():
-    # Validate running state
-    status = communication_utils.getScailableStatus()
-    if status["Running"] == False:
-        print(
-            "EXAMPLE PLUGIN: Postprocessor started without the Scailable Runtime running. This will probably not work."
-        )
-    # Validate settings
-    validateSettings()
-
     # Start socket listener to receive messages from Scailable runtime
     server = communication_utils.startUnixSocketServer(Postprocessor_Socket_Path)
     # Wait for messages in a loop
@@ -62,56 +53,34 @@ def main():
             )
             continue
 
-        image_header = json.loads(image_header.decode("utf-8"))
+        # Parse input message
+        input_object = communication_utils.parseInferenceResults(input_message)
+
+        print("Unpacked ", input_object)
+
+        image_header = msgpack.unpackb(image_header)
         print(image_header)
-        parseImageFromSHM(
+        cumulative = parseImageFromSHM(
             image_header["SHMKey"],
             image_header["Width"],
             image_header["Height"],
             image_header["Channels"],
         )
 
+        # Add extra bbox
+        if "Counts" not in input_object:
+            input_object["Counts"] = {}
+        input_object["Counts"]["ImageBytesCumalitive"] = cumulative
+
         print("EXAMPLE PLUGIN: Received input message: ", input_message)
 
-        # Parse input message
-        input_object = json.loads(input_message.decode("utf-8"))
-
-        # Alter message
-        input_object["output"]["Python-Json-Image-Socket-Postprocessor"] = "Processed"
+        print("Packing ", input_object)
 
         # Write object back to string
-        output_string = json.dumps(input_object)
-
-        # Convert the message to bytes
-        message_bytes = bytes(output_string, "utf-8")
+        output_message = communication_utils.writeInferenceResults(input_object)
 
         # Send message back to runtime
-        communication_utils.sendMessageOverConnection(connection, message_bytes)
-
-
-def validateSettings():
-    settings = communication_utils.getScailableSettings()
-    # Validate postprocessor is defined in 'externalPostprocessors' setting
-    external_postprocessors = []
-    if "externalPostprocessors" in settings:
-        external_postprocessors = settings["externalPostprocessors"]
-    for postprocessor in external_postprocessors:
-        if postprocessor["Name"] == Postprocessor_Name:
-            break
-    else:
-        print(
-            "EXAMPLE PLUGIN: Postprocessor started without being defined in 'externalPostprocessors' setting. This will probably not work"
-        )
-    # Validate postprocessor is assigned to a model
-    is_assigned = False
-    for model_data in settings["module"]["AssignedModels"]:
-        for assigned_postprocessor in model_data["AssignedModelPostProcessors"]:
-            if assigned_postprocessor == Postprocessor_Name:
-                is_assigned = True
-    if is_assigned == False:
-        print(
-            "EXAMPLE PLUGIN: Postprocessor started without being assigned to any model. This will probably not work"
-        )
+        communication_utils.sendMessageOverConnection(connection, output_message)
 
 
 def signalHandler(sig, _):
