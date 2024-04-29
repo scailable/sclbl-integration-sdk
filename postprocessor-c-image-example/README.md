@@ -1,17 +1,17 @@
 Socket MessagePack Postprocessor C Image Example
 =========================
 
-This example application provides an example on how to create a C based postprocessor that can be integrated with the Scailable Edge AI Manager.
+This example application provides an example on how to create a C based postprocessor that can be integrated with the NXAI Edge AI Manager.
 
 # MessagePack Postprocessors Control Flow
 
-The normal control flow of a MessagePack postprocessor is to receive a MessagePack binary message representing the inference results from the Scailable Edge AI Manager, and return the same or an altered version of the received MessagePack message.
+The normal control flow of a MessagePack postprocessor is to receive a MessagePack binary message representing the inference results from the NXAI Edge AI Manager, and return the same or an altered version of the received MessagePack message.
 
 This example will show how to access the input tensor which the inference results were generated from for additional analysis or presentation. It is possible to define the postprocessor indicating that the Edge AI Runtime should send additional information to allow the postprocessor to access the input tensor. If this setting is enabled, the Edge AI Manager will send an additional messagePack message after the inference results messages containing the relevant fields. The postprocessor should therefore expect two messages before responding.
 
 An external postprocessor can parse the incoming MessagePack message, do analysis, optionally alter it, and return it. The alterations made by an external postprocessor will be kept and sent to the Network Optix server to be represented as bounding boxes or events.
 
-An external postprocessor is a standalone application which is expected to receive these MessagePack messages and return a MessagePack message with a compatible format. Instructions can be added to the Edge AI Manager settings file to handle executing and terminating the application.
+An external postprocessor is a standalone application which is expected to receive these MessagePack messages and return a MessagePack message with a compatible format. Instructions can be added to a configuration file to handle executing and terminating the application.
 
 # MessagePack schema
 
@@ -53,21 +53,29 @@ A convenience example function is provided showing how to use this data to acces
 
 # How to use
 
-Once compiled, copy the executable to an accessible directory. A convenience directory within the Edge AI Manager installation is created for this purpose at `/opt/sclbl/postprocessors`.
+Once compiled, copy the executable to an accessible directory. A convenience directory within the Edge AI Manager installation is created for this purpose at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors`.
+
+It's a good idea to make sure the application and settings file you add is readable and executable by the NXAI Edge AI Manager. This can be achieved by running:
+
+```
+sudo chmod -R 777 /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors
+```
 
 ## Defining the postprocessor
 
-Add the external postprocessor definition to the settings file at `/opt/sclbl/etc/settings.json` by adding the following object to the root object of the Json file:
+Add the external postprocessor definition to the settings file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/external_postprocessors.json` by adding the following object to the root object of the Json file:
 
 ``` json
-"externalPostprocessors": [
-    {
-        "Name":"Example-Postprocessor",
-        "Command":"/opt/sclbl/postprocessors/postprocessor-python-example",
-        "SocketPath":"/opt/sclbl/sockets/example-postprocessor.sock",
-        "ReceiveInputTensor": 1
-    }
-]
+{
+    "externalPostprocessors": [
+        {
+            "Name":"Example-Postprocessor",
+            "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-python-example",
+            "SocketPath":"/tmp/example-postprocessor.sock",
+            "ReceiveInputTensor": 1
+        }
+    ]
+}
 ```
 
 This tells the Edge AI Manager about the postprocessor:
@@ -76,7 +84,7 @@ This tells the Edge AI Manager about the postprocessor:
 - **SocketPath** tells the AI Manager where to send data to so the external postprocessor will receive it
 - **ReceiveInputTensor** tells the AI Manager if this postprocessor expects information to access the raw input tensor data
 
-The socket path is always given as the first command line argument when the application is started. It is therefore best practice for the external postprocessor application to read its socket path from here, instead of defining the data twice. A convience directory is created with the Edge AI Manager application is created for this purpose at `/opt/sclbl/sockets`.
+The socket path is always given as the first command line argument when the application is started. It is therefore best practice for the external postprocessor application to read its socket path from here, instead of defining the data twice.
 
 ## Selecting to the postprocessor
 
@@ -85,4 +93,4 @@ If the postprocessor is defined correctly, its name should appear in the list of
 
 # Licence
 
-Copyright 2023, Scailable, All rights reserved.
+Copyright 2024, Network Optix, All rights reserved.

@@ -1,7 +1,7 @@
-Scailable Integration SDK
+NX Integration SDK
 =========================
 
-The Scailable Integration SDK provides tools and examples for clients to create applications which seamlessly integrates with the Scailable software stack.
+The NX Integration SDK provides tools and examples for clients to create applications which seamlessly integrates with the NX software stack.
 
 See the subdirectories for further documentation.
 
@@ -55,7 +55,7 @@ cmake --build . --target install
 
 ## Licence
 
-Copyright 2022, Scailable, All rights reserved.
+Copyright 2024, Network Optix, All rights reserved.
 
 ## Directory structure
 

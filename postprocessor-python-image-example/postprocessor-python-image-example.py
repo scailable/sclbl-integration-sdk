@@ -18,7 +18,7 @@ Postprocessor_Name = "Python-Example-Postprocessor"
 # The socket this postprocessor will listen on.
 # This is always given as the first argument when the process is started
 # But it can be manually defined as well, as long as it is the same as the socket path in the runtime settings
-Postprocessor_Socket_Path = "/opt/sclbl/sockets/python-example-postprocessor.sock"
+Postprocessor_Socket_Path = "/tmp/python-example-postprocessor.sock"
 
 
 def parseImageFromSHM(shm_key: int, width: int, height: int, channels: int):
@@ -32,7 +32,7 @@ def parseImageFromSHM(shm_key: int, width: int, height: int, channels: int):
 
 
 def main():
-    # Start socket listener to receive messages from Scailable runtime
+    # Start socket listener to receive messages from NXAI runtime
     server = communication_utils.startUnixSocketServer(Postprocessor_Socket_Path)
     # Wait for messages in a loop
     while True:

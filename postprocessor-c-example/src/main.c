@@ -2,6 +2,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
+#include <strings.h>
 #include <unistd.h>
 
 // Local includes
@@ -21,7 +22,7 @@ char *processMpackDocument( const char *input_buffer, size_t input_buffer_length
 /**
  * @brief Function to handle interrupt signals
  *
- * When the Scailable Runtime is stopped, it sends an interrupt signal to all postprocessors it started
+ * When the NXAI Runtime is stopped, it sends an interrupt signal to all postprocessors it started
  * and waits for them to exit.
  *
  * This function sets a global interrupt flag which stops the socket listener loop. After the loop is broken
