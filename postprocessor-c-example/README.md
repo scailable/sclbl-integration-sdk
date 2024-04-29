@@ -50,14 +50,16 @@ sudo chmod -R 777 /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/
 Add the external postprocessor definition to the settings file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/external_postprocessors.json` by adding the following object to the root object of the Json file:
 
 ``` json
-"externalPostprocessors": [
-    {
-        "Name":"Example-Postprocessor",
-        "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-c-example",
-        "SocketPath":"/tmp/example-postprocessor.sock",
-        "ReceiveInputTensor": 0
-    }
-]
+{
+    "externalPostprocessors": [
+        {
+            "Name":"Example-Postprocessor",
+            "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-c-example",
+            "SocketPath":"/tmp/example-postprocessor.sock",
+            "ReceiveInputTensor": 0
+        }
+    ]
+}
 ```
 
 This tells the Edge AI Manager about the postprocessor:

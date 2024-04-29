@@ -80,6 +80,9 @@ int main( int argc, char *argv[] ) {
         }
     }
 
+    // Unlink socket file so it can be used again
+    unlink( socket_path );
+
     printf( "EXAMPLE POSTPROCESSOR: Exiting.\n" );
 }
 
