@@ -12,6 +12,9 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/postprocessor-c-example)
 # Add C Image Postprocessor project
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/postprocessor-c-image-example)
 
+# Add C Raw Postprocessor project
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/postprocessor-c-raw-example)
+
 # Add Postprocessor Python project
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/postprocessor-python-example)
 
@@ -22,6 +25,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/postprocessor-python-image-example)
 install(TARGETS
     postprocessor-c-example
     postprocessor-c-image-example
+    postprocessor-c-raw-example
     DESTINATION /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/
 )
 install(PROGRAMS
