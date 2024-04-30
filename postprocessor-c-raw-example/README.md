@@ -1,6 +1,8 @@
 Socket MessagePack Postprocessor Raw C Example
 =========================
 
+> :warning: **This Postprocessor Is Only Compatible With Nightly Version**: The functionality to receive raw model output is a feature currently only in the nightly version of the Edge AI Manager.
+
 This example application provides an example on how to create a C based postprocessor that can be integrated with the NXAI Edge AI Manager.
 
 # MessagePack Postprocessors Control Flow
@@ -52,7 +54,7 @@ sudo chmod -R 777 /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/
 
 ## Defining the postprocessor
 
-Add the external postprocessor definition to the settings file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/external_postprocessors.json` by adding the following object to the root object of the Json file:
+Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/external_postprocessors.json` and add the details of your postprocessor to the root object of that file. For example: 
 
 ``` json
 {
