@@ -1,13 +1,13 @@
-Socket MessagePack Postprocessor Raw C Example
+Postprocessor Raw C Example
 =========================
 
 > :warning: **This Postprocessor Is Only Compatible With Nightly Version**: The functionality to receive raw model output is a feature currently only in the nightly version of the Edge AI Manager.
 
 This example application provides an example on how to create a C based postprocessor that can be integrated with the NXAI Edge AI Manager.
 
-# MessagePack Postprocessors Control Flow
+# Postprocessors Control Flow
 
-The normal control flow of a MessagePack postprocessor is to receive a MessagePack binary message representing the inference results from the NXAI Edge AI Manager, and return the same or an altered version of the received MessagePack message.
+The normal control flow of a postprocessor is to receive a MessagePack binary message representing the inference results from the NXAI Edge AI Manager, and return the same or an altered version of the received MessagePack message.
 
 An external postprocessor can parse the incoming MessagePack message, do analysis, optionally alter it, and return it. The alterations made by an external postprocessor will be kept and sent to the Network Optix server to be represented as bounding boxes or events.
 

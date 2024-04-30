@@ -1,11 +1,11 @@
-Socket MessagePack Postprocessor C Image Example
+Postprocessor C Image Example
 =========================
 
 This example application provides an example on how to create a C based postprocessor that can be integrated with the NXAI Edge AI Manager.
 
-# MessagePack Postprocessors Control Flow
+# Postprocessors Control Flow
 
-The normal control flow of a MessagePack postprocessor is to receive a MessagePack binary message representing the inference results from the NXAI Edge AI Manager, and return the same or an altered version of the received MessagePack message.
+The normal control flow of a postprocessor is to receive a MessagePack binary message representing the inference results from the NXAI Edge AI Manager, and return the same or an altered version of the received MessagePack message.
 
 This example will show how to access the input tensor which the inference results were generated from for additional analysis or presentation. It is possible to define the postprocessor indicating that the Edge AI Runtime should send additional information to allow the postprocessor to access the input tensor. If this setting is enabled, the Edge AI Manager will send an additional messagePack message after the inference results messages containing the relevant fields. The postprocessor should therefore expect two messages before responding.
 
