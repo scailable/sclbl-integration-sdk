@@ -44,9 +44,9 @@ Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugin
     "externalPostprocessors": [
         {
             "Name":"Example-Postprocessor",
-            "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-python-example",
+            "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-cloud-inference-example",
             "SocketPath":"/tmp/example-postprocessor.sock",
-            "ReceiveInputTensor": 0
+            "ReceiveInputTensor": 1
         }
     ]
 }
