@@ -7,14 +7,18 @@ See the subdirectories for further documentation.
 
 ## Requirements
 
+### To Clone
+
+The repository should be cloned with `--recurse-submodules`.
+
 ### To Compile
 
 These applications can be compiled on any architecture natively in a Linux environment.
 
 To compile, some software packages are required. These can be installed by running:
 
-- sudp apt install cmake
-- sudp apt install g++
+- sudo apt install cmake
+- sudo apt install g++
 
 Also make sure that all of these are accessible from PATH.
 
