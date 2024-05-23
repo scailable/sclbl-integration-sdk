@@ -1,0 +1,4 @@
+pyinstaller
+pillow
+msgpack
+edgeimpulse
