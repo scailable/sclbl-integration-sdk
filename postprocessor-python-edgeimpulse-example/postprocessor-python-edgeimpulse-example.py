@@ -45,7 +45,6 @@ def main():
 
         # Parse image information
         image_header = msgpack.unpackb(image_header)
-        image_data = communication_utils.read_shm(image_header["SHMKey"])
 
         # Decouple training conditions and uploading the sample
         upload_sample = False
@@ -56,8 +55,9 @@ def main():
             print('Less than 4 faces detected')
             upload_sample = True
 
-        # Store the image as JPEG in the training directory
+        # Upload the sample to Edge Impulse
         if upload_sample:
+            image_data = communication_utils.read_shm(image_header["SHMKey"])
             with Image.frombytes("RGB", (image_header["Width"], image_header["Height"]), image_data) as image:
                 with io.BytesIO() as output:
                     image.save(output, format="JPEG")
@@ -75,7 +75,6 @@ def main():
                     edgeimpulse.experimental.data.upload_samples(samples)
                     print("Send sample to Edge Impulse: c={c} f={f} l={l}".format(c=counter,f=filename,l=len(contents)))
                     counter += 1
-                # image.save("{location}/{counter}.jpg".format(location=location, counter=counter))
 
         # Write object back to string
         output_message = communication_utils.writeInferenceResults(input_object)
