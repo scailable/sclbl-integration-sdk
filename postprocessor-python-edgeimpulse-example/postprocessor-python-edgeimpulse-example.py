@@ -3,6 +3,8 @@ import os
 import sys
 import socket
 import signal
+import time
+
 from PIL import Image
 import msgpack
 import edgeimpulse
@@ -22,10 +24,59 @@ Postprocessor_Name = "Python-Example-Postprocessor"
 # But it can be manually defined as well, as long as it is the same as the socket path in the runtime settings
 Postprocessor_Socket_Path = "/tmp/python-example-postprocessor.sock"
 
+# We keep a counter to generate unique filenames.
+samples_counter: int = 0
+
+# The buffer with samples to batch.
+samples_buffer: list = []
+
+# Flush the buffer at this length
+samples_buffer_flush_size = 20
+
+
+def send_samples_buffer():
+    # This function sends the buffered samples to an Edge Impulse instance for data processing.
+    # It generates a unique filename for each sample and adds it to a new list of samples while
+    # updating the global counter.
+    # It then uploads all these samples to the Edge Impulse. The function also times the duration of
+    # the upload and prints this time along with the number of samples uploaded. If the sample buffer
+    # was already empty, the function just prints that there were no samples to upload.
+    # At the end, it empties the sample buffer.
+    global samples_buffer, samples_counter
+    if len(samples_buffer) > 0:
+        print("Sending {c} samples to Edge Impulse...".format(c=len(samples_buffer)))
+        start_at = time.perf_counter()
+        samples = []
+        for contents in samples_buffer:
+            samples_counter += 1
+            filename = "{dt}C{c}.jpg".format(dt=datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), c=samples_counter)
+            output = io.BytesIO(contents)
+            sample = edgeimpulse.experimental.data.Sample(
+                filename=filename,
+                data=output,
+                metadata={
+                    "date": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                }
+            )
+            samples.append(sample)
+
+        edgeimpulse.experimental.data.upload_samples(samples)
+        end_at = time.perf_counter()
+        print("Send {c} samples in {d:0.1f}sec to Edge Impulse. Total {t}".format(
+            c=len(samples_buffer), d=end_at-start_at, t=samples_counter,
+        ))
+        # print("Send a total of {t} samples to Edge Impulse".format(t=samples_counter))
+
+        samples_buffer = []
+    else:
+        print("No samples to send to Edge Impulse. Total {t}".format(t=samples_counter))
+
 
 def main():
+    global samples_buffer
+    global samples_counter
+
     edgeimpulse.API_KEY = ""  # enter your own API_KEY here
-    counter = 1
 
     # Start socket listener to receive messages from NXAI runtime
     server = communication_utils.startUnixSocketServer(Postprocessor_Socket_Path)
@@ -43,8 +94,8 @@ def main():
         # Parse input message
         input_object = communication_utils.parseInferenceResults(input_message)
 
-        # Parse image information
-        image_header = msgpack.unpackb(image_header)
+        # Send input message back to runtime
+        communication_utils.sendMessageOverConnection(connection, input_message)
 
         # Decouple training conditions and uploading the sample
         upload_sample = False
@@ -57,34 +108,24 @@ def main():
 
         # Upload the sample to Edge Impulse
         if upload_sample:
+            # Parse image information
+            image_header = msgpack.unpackb(image_header)
+
+            # Read image
             image_data = communication_utils.read_shm(image_header["SHMKey"])
             with Image.frombytes("RGB", (image_header["Width"], image_header["Height"]), image_data) as image:
                 with io.BytesIO() as output:
                     image.save(output, format="JPEG")
                     output.seek(0)
-                    filename = "{dt}C{c}.jpg".format(dt=datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), c=counter)
-                    contents = output.getvalue()
-                    sample = edgeimpulse.experimental.data.Sample(
-                        filename=filename,
-                        data=output,
-                        metadata={
-                            "date": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                        }
-                    )
-                    samples = [sample]
-                    edgeimpulse.experimental.data.upload_samples(samples)
-                    print("Send sample to Edge Impulse: c={c} f={f} l={l}".format(c=counter,f=filename,l=len(contents)))
-                    counter += 1
-
-        # Write object back to string
-        output_message = communication_utils.writeInferenceResults(input_object)
-
-        # Send message back to runtime
-        communication_utils.sendMessageOverConnection(connection, output_message)
+                    samples_buffer.append(output.getvalue())
+            if len(samples_buffer) >= samples_buffer_flush_size:
+                send_samples_buffer()
 
 
 def signal_handler(sig, _):
     print("EXAMPLE PLUGIN: Received interrupt signal: ", sig)
+    if len(samples_buffer) > 0:
+        send_samples_buffer()
     sys.exit(0)
 
 
