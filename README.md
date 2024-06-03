@@ -43,7 +43,7 @@ Set up CMake configuration:
 cmake ..
 ```
 
-Build all target:
+Build all targets:
 
 ```
 make
@@ -67,30 +67,34 @@ Copyright 2024, Network Optix, All rights reserved.
 .
 ├── CMakeLists.txt
 ├── README.md
-├── socket-json-postprocessor-c-example
+├── postprocessor-c-example
 │   ├── CMakeLists.txt
 │   ├── README.md
 │   ├── deps
-│   │   ├── yyjson.c
-│   │   └── yyjson.h
 │   └── src
-│       └── main.c
-├── socket-json-postprocessor-c-image-example
+├── postprocessor-c-image-example
 │   ├── CMakeLists.txt
 │   ├── README.md
 │   ├── deps
-│   │   ├── yyjson.c
-│   │   └── yyjson.h
 │   └── src
-│       └── main.c
-├── socket-json-postprocessor-python-example
+├── postprocessor-c-raw-example
+│   ├── CMakeLists.txt
+│   ├── README.md
+│   ├── deps
+│   └── src
+├── postprocessor-python-example
 │   ├── CMakeLists.txt
 │   ├── README.md
 │   ├── postprocessor-python-example.py
 │   └── requirements.txt
-└── socket-json-postprocessor-python-image-example
+├── postprocessor-python-image-example
+│   ├── CMakeLists.txt
+│   ├── README.md
+│   ├── postprocessor-python-image-example.py
+│   └── requirements.txt
+└── postprocessor-python-edgeimpulse-example
     ├── CMakeLists.txt
     ├── README.md
-    ├── postprocessor-python-image-example.py
+    ├── postprocessor-python-edgeimpulse-example.py
     └── requirements.txt
 ```

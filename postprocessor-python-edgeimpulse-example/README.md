@@ -1,5 +1,5 @@
-Socket MessagePack Postprocessor Python Image Example
-=========================
+Postprocessor Python Image Example
+==================================
 
 This example application provides an example on how to create a Python based postprocessor that can be integrated with the NXAI Edge AI Manager.
 
@@ -47,7 +47,6 @@ The image header message contains fields indicating information about the image 
 ```json
 {
     "Width": <Width>,
-    "Height": <Height>,
     "Height": <Height>,
     "SHMKey": <SHM Key>,
     "SHMID": <SHM ID>
