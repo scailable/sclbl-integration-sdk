@@ -7,14 +7,18 @@ See the subdirectories for further documentation.
 
 ## Requirements
 
+### To Clone
+
+The repository should be cloned with `--recurse-submodules`.
+
 ### To Compile
 
 These applications can be compiled on any architecture natively in a Linux environment.
 
 To compile, some software packages are required. These can be installed by running:
 
-- sudp apt install cmake
-- sudp apt install g++
+- sudo apt install cmake
+- sudo apt install g++
 
 Also make sure that all of these are accessible from PATH.
 
@@ -39,7 +43,7 @@ Set up CMake configuration:
 cmake ..
 ```
 
-Build all target:
+Build all targets:
 
 ```
 make
@@ -63,30 +67,61 @@ Copyright 2024, Network Optix, All rights reserved.
 .
 ├── CMakeLists.txt
 ├── README.md
-├── socket-json-postprocessor-c-example
-│   ├── CMakeLists.txt
-│   ├── README.md
-│   ├── deps
-│   │   ├── yyjson.c
-│   │   └── yyjson.h
-│   └── src
-│       └── main.c
-├── socket-json-postprocessor-c-image-example
-│   ├── CMakeLists.txt
-│   ├── README.md
-│   ├── deps
-│   │   ├── yyjson.c
-│   │   └── yyjson.h
-│   └── src
-│       └── main.c
-├── socket-json-postprocessor-python-example
-│   ├── CMakeLists.txt
-│   ├── README.md
-│   ├── postprocessor-python-example.py
-│   └── requirements.txt
-└── socket-json-postprocessor-python-image-example
-    ├── CMakeLists.txt
-    ├── README.md
-    ├── postprocessor-python-image-example.py
-    └── requirements.txt
+├── postprocessor-c-example
+│   ├── CMakeLists.txt
+│   ├── README.md
+│   ├── deps
+│   │   ├── mpack.c
+│   │   ├── mpack.h
+│   │   └── nxai_data_utils.h
+│   └── src
+│       ├── main.c
+│       └── nxai_data_utils.c
+├── postprocessor-c-image-example
+│   ├── CMakeLists.txt
+│   ├── README.md
+│   ├── deps
+│   │   ├── mpack.c
+│   │   ├── mpack.h
+│   │   └── nxai_data_utils.h
+│   └── src
+│       ├── main.c
+│       └── nxai_data_utils.c
+├── postprocessor-c-raw-example
+│   ├── CMakeLists.txt
+│   ├── README.md
+│   ├── deps
+│   │   ├── mpack.c
+│   │   ├── mpack.h
+│   │   └── nxai_data_utils.h
+│   └── src
+│       ├── main.c
+│       └── nxai_data_utils.c
+├── postprocessor-cloud-inference-example
+│   ├── CMakeLists.txt
+│   ├── README.md
+│   ├── aws_utils.py
+│   ├── postprocessor-cloud-inference-example.py
+│   └── requirements.txt
+├── postprocessor-python-edgeimpulse-example
+│   ├── CMakeLists.txt
+│   ├── README.md
+│   ├── postprocessor-python-edgeimpulse-example.py
+│   └── requirements.txt
+├── postprocessor-python-example
+│   ├── CMakeLists.txt
+│   ├── README.md
+│   ├── postprocessor-python-example.py
+│   └── requirements.txt
+├── postprocessor-python-image-example
+│   ├── CMakeLists.txt
+│   ├── README.md
+│   ├── postprocessor-python-image-example.py
+│   └── requirements.txt
+├── postprocessor-python-noresponse-example
+│   ├── CMakeLists.txt
+│   ├── README.md
+│   ├── postprocessor-python-noresponse-example.py
+│   └── requirements.txt
+└── sclbl-utilities
 ```
