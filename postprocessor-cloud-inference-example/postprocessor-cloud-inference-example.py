@@ -9,9 +9,9 @@ import struct
 import numpy as np
 from aws_utils import classify_faces
 
-# Add the sclbl-utilities python utilities
+# Add the nxai-utilities python utilities
 script_location = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.join(script_location, "../sclbl-utilities/python-utilities"))
+sys.path.append(os.path.join(script_location, "../nxai-utilities/python-utilities"))
 import communication_utils
 
 # The name of the postprocessor.
@@ -29,7 +29,9 @@ def parseImageFromSHM(shm_key: int, width: int, height: int, channels: int):
         image_data = communication_utils.read_shm(shm_key)
         image_size = width * height * channels
         image_array = list(struct.unpack("B" * image_size, image_data))
-        image_array = np.array(image_array).reshape((height, width, channels)).astype('uint8')
+        image_array = (
+            np.array(image_array).reshape((height, width, channels)).astype("uint8")
+        )
     except Exception as e:
         print("Failed to parse image from shared memory: ", e)
         return None
@@ -74,11 +76,11 @@ def main():
 
         image = Image.fromarray(image_array)
 
-        faces = np.array(input_object['BBoxes_xyxy']['face']).reshape(-1, 4)
+        faces = np.array(input_object["BBoxes_xyxy"]["face"]).reshape(-1, 4)
 
         faces_to_delete = []
         for i, face in enumerate(faces):
-            path = '/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/face.png'
+            path = "/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/face.png"
             x1, y1, x2, y2 = face
             cropped_image = image.crop((x1, y1, x2, y2))
             cropped_image.save(path)
@@ -89,9 +91,9 @@ def main():
 
             # Add the description to the object
             if description not in input_object:
-                input_object['BBoxes_xyxy'][description] = face.tolist()
+                input_object["BBoxes_xyxy"][description] = face.tolist()
             else:
-                input_object['BBoxes_xyxy'][description].extend(face.tolist())
+                input_object["BBoxes_xyxy"][description].extend(face.tolist())
 
             faces_to_delete.append(i)
 
@@ -101,7 +103,7 @@ def main():
 
         # Delete the faces that have been classified
         faces = np.delete(faces, faces_to_delete, axis=0)
-        input_object['BBoxes_xyxy']['face'] = faces.flatten().tolist()
+        input_object["BBoxes_xyxy"]["face"] = faces.flatten().tolist()
 
         # Write object back to string
         output_message = communication_utils.writeInferenceResults(input_object)

@@ -7,7 +7,7 @@
 
 // Local includes
 #include "mpack.h"
-#include "sclbl_socket_utils.h"
+#include "nxai_socket_utils.h"
 
 // Deps includes
 #include "nxai_data_structures.h"
@@ -52,12 +52,12 @@ int main( int argc, char *argv[] ) {
     uint32_t message_length;
 
     // Create a listener socket
-    int socket_fd = sclbl_socket_create_listener( socket_path );
+    int socket_fd = nxai_socket_create_listener( socket_path );
 
     // Main loop: continues until an interrupt signal is received
     while ( interrupt_flag == false ) {
         // Wait for a message on the socket
-        int connection_fd = sclbl_socket_await_message( socket_fd, &allocated_buffer_size, &input_buffer, &message_length );
+        int connection_fd = nxai_socket_await_message( socket_fd, &allocated_buffer_size, &input_buffer, &message_length );
 
         // If connection times out, it continues to wait for the message again
         if ( connection_fd == -1 ) {
@@ -69,7 +69,7 @@ int main( int argc, char *argv[] ) {
         char *output_message = processMpackDocument( input_buffer, message_length, &output_length );
 
         // Send the processed output back to the socket
-        sclbl_socket_send_to_connection( connection_fd, output_message, output_length );
+        nxai_socket_send_to_connection( connection_fd, output_message, output_length );
 
         // Free buffer
         free( output_message );

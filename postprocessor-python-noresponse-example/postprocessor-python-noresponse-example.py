@@ -3,9 +3,9 @@ import sys
 import socket
 import signal
 
-# Add the sclbl-utilities python utilities
+# Add the nxai-utilities python utilities
 script_location = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.join(script_location, "../sclbl-utilities/python-utilities"))
+sys.path.append(os.path.join(script_location, "../nxai-utilities/python-utilities"))
 import communication_utils
 
 # The name of the postprocessor.
@@ -50,6 +50,7 @@ def main():
         input_object = communication_utils.parseInferenceResults(input_message)
 
         print("Unpacked ", input_object)
+
 
 def signalHandler(sig, _):
     print("EXAMPLE PLUGIN: Received interrupt signal: ", sig)

@@ -10,9 +10,9 @@ import msgpack
 import edgeimpulse
 from datetime import datetime
 
-# Add the sclbl-utilities python utilities
+# Add the nxai-utilities python utilities
 script_location = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.join(script_location, "../sclbl-utilities/python-utilities"))
+sys.path.append(os.path.join(script_location, "../nxai-utilities/python-utilities"))
 import communication_utils
 
 # The name of the postprocessor.
@@ -49,22 +49,28 @@ def send_samples_buffer():
         samples = []
         for contents in samples_buffer:
             samples_counter += 1
-            filename = "{dt}C{c}.jpg".format(dt=datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), c=samples_counter)
+            filename = "{dt}C{c}.jpg".format(
+                dt=datetime.now().strftime("%Y-%m-%dT%H:%M:%S"), c=samples_counter
+            )
             output = io.BytesIO(contents)
             sample = edgeimpulse.experimental.data.Sample(
                 filename=filename,
                 data=output,
                 metadata={
-                    "date": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                }
+                    "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                },
             )
             samples.append(sample)
 
         edgeimpulse.experimental.data.upload_samples(samples)
         end_at = time.perf_counter()
-        print("Send {c} samples in {d:0.1f}sec to Edge Impulse. Total {t}".format(
-            c=len(samples_buffer), d=end_at-start_at, t=samples_counter,
-        ))
+        print(
+            "Send {c} samples in {d:0.1f}sec to Edge Impulse. Total {t}".format(
+                c=len(samples_buffer),
+                d=end_at - start_at,
+                t=samples_counter,
+            )
+        )
         # print("Send a total of {t} samples to Edge Impulse".format(t=samples_counter))
 
         samples_buffer = []
@@ -101,9 +107,12 @@ def main():
         upload_sample = False
 
         # Trigger the potential training image on condition
-        if 'BBoxes_xyxy' in input_object and 'face' in input_object['BBoxes_xyxy'] and len(
-                input_object['BBoxes_xyxy']['face']) < 4 * 4:
-            print('Less than 4 faces detected')
+        if (
+            "BBoxes_xyxy" in input_object
+            and "face" in input_object["BBoxes_xyxy"]
+            and len(input_object["BBoxes_xyxy"]["face"]) < 4 * 4
+        ):
+            print("Less than 4 faces detected")
             upload_sample = True
 
         # Upload the sample to Edge Impulse
@@ -113,7 +122,9 @@ def main():
 
             # Read image
             image_data = communication_utils.read_shm(image_header["SHMKey"])
-            with Image.frombytes("RGB", (image_header["Width"], image_header["Height"]), image_data) as image:
+            with Image.frombytes(
+                "RGB", (image_header["Width"], image_header["Height"]), image_data
+            ) as image:
                 with io.BytesIO() as output:
                     image.save(output, format="JPEG")
                     output.seek(0)
