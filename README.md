@@ -57,6 +57,12 @@ To install the generated postprocessor examples to the default postprocessors fo
 cmake --build . --target install
 ```
 
+Finally, to (re)load your new postprocessor, make sure to restart the NX Server with:
+
+```
+sudo service networkoptix-metavms-mediaserver restart
+```
+
 ## Licence
 
 Copyright 2024, Network Optix, All rights reserved.
