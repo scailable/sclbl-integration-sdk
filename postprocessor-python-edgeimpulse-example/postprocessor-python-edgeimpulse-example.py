@@ -19,10 +19,12 @@ import edgeimpulse
 # Set up logging
 LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
             "nxai_plugin/nxai_manager/etc/plugin.log")
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
-                    filename=LOG_FILE, filemode="w")
 
-logging.debug("Starting plugin")
+# Option autogenerate images every x seconds as an alternative to sending based on p_value
+auto_generator = True
+
+# If auto_generator True, every how many seconds upload an image?
+auto_generator_every_seconds = 1
 
 # We keep a counter to generate unique filenames.
 samples_counter: int = 0
@@ -32,6 +34,14 @@ samples_buffer: list = []
 
 # Flush the buffer at this length
 samples_buffer_flush_size = 20
+
+# Send images below this value to EdgeImpulse. Can be between 0.0 and 1.0
+p_value = 0.4
+
+# Initialize plugin and logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
+                    filename=LOG_FILE, filemode="w")
+logging.debug("Initializing plugin")
 
 
 def send_samples_buffer():
@@ -99,9 +109,12 @@ def main():
 
     global samples_buffer
     global samples_counter
+    global p_value
+    global auto_generator
+    global auto_generator_every_seconds
 
     # Add your own project level Edge Impulse API key
-    edgeimpulse.API_KEY = "ei_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    edgeimpulse.API_KEY = "ei_ac02e87882ebf271af5d5cd6e2182354e6cb44a8b597e894"
 
     # Start socket listener to receive messages from NXAI runtime
     try:
@@ -112,6 +125,9 @@ def main():
     # Wait for messages in a loop
 
     counter = 0
+
+    # Get the current time at the start
+    start_time = time.time()
 
     while True:
 
@@ -156,27 +172,36 @@ def main():
         formatted_object = pformat(parsed_response)
         logging.debug(f'Parsed response:\n\n{formatted_object}\n\n')
 
-        # Now, lets check whether any of the outputs is more uncertain than p = 0.4
+        current_time = time.time()
 
-        # Retrieve the bounding box values
-        bbox_values = parsed_response['Outputs']['bboxes-format:xyxysc;0:class0;1:class1']
+        # Check if auto_generator is True and 60 seconds have passed
+        if auto_generator and current_time - start_time >= auto_generator_every_seconds:
 
-        # Number of elements in each bounding box entry (assuming format: x1, y1, x2, y2, score, class)
-        num_elements_per_entry = 6
+            start_time = current_time
+            logging.info("Add timed sample (every )" + str(auto_generator_every_seconds)
+                         + "(seconds) number " + str(counter) + " to upload queue")
+            upload_sample = True
 
-        # Extract every 5th out of six values
-        parsed_values = [bbox_values[i] for i in range(4, len(bbox_values), num_elements_per_entry)]
+        elif not auto_generator:
 
-        # Check if any of the values are below p = 0.4 and earmark result for retrieval
-        for value in parsed_values:
-            if value < 0.4:
-                logging.debug("Parsed value: %.8f", value)
-                upload_sample = True
+            # Retrieve the bounding box values
+            bbox_values = parsed_response['Outputs']['bboxes-format:xyxysc;0:class0;1:class1']
 
-        logging.info(".")
+            # Number of elements in each bounding box entry (assuming format: x1, y1, x2, y2, score, class)
+            num_elements_per_entry = 6
+
+            # Extract every 5th out of six values
+            parsed_values = [bbox_values[i] for i in range(4, len(bbox_values), num_elements_per_entry)]
+
+            # Check if any of the values are below p_value and earmark result for retrieval
+            for value in parsed_values:
+                if value < p_value:
+                    logging.debug("Parsed value: %.8f", value)
+                    upload_sample = True
+
         if upload_sample:
-
-            logging.info("UPLOAD!")
+            upload_sample = False
+            logging.info("x")
             # Parse image information
             image_header = msgpack.unpackb(image_header)
 
@@ -189,6 +214,8 @@ def main():
                     samples_buffer.append(output.getvalue())
             if len(samples_buffer) >= samples_buffer_flush_size:
                 send_samples_buffer()
+        else:
+            logging.info(".")
 
         # Create msgpack formatted message
         data_types = parsed_response.get("OutputDataTypes")
