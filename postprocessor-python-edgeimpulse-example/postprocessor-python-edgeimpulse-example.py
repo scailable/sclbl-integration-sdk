@@ -15,6 +15,7 @@ from PIL import Image
 # noinspection PyUnresolvedReferences
 import edgeimpulse
 
+edgeimpulse_api_key = "ei_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 # Set up logging
 LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
@@ -41,6 +42,7 @@ p_value = 0.4
 # Initialize plugin and logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
                     filename=LOG_FILE, filemode="w")
+					
 logging.debug("Initializing plugin")
 
 
@@ -112,9 +114,10 @@ def main():
     global p_value
     global auto_generator
     global auto_generator_every_seconds
+	global edgeimpulse_api_key
 
     # Add your own project level Edge Impulse API key
-    edgeimpulse.API_KEY = "ei_ac02e87882ebf271af5d5cd6e2182354e6cb44a8b597e894"
+    edgeimpulse.API_KEY = edgeimpulse_api_key
 
     # Start socket listener to receive messages from NXAI runtime
     try:
