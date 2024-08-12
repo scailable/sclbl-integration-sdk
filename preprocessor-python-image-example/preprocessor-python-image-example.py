@@ -28,18 +28,33 @@ output_shm = None
 def parseImageFromSHM(shm_key: int, width: int, height: int, channels: int):
     global output_shm
     if output_shm is None:
+        # Can reuse SHM ( if data is smaller or equal size ) or create new SHM and return ID
         input_image_size = width * height * channels
         output_shm = communication_utils.create_shm(input_image_size)
-        print("Created shm: ", output_shm.id, output_shm.size)
+        print(
+            "EXAMPLE PLUGIN Created shm ID: ", output_shm.id, "Size:", output_shm.size
+        )
 
     image_data = communication_utils.read_shm(shm_key)
 
-    # Set all to zero
-    # image_data = b"\0" * len(image_data)
+    # Create new output image
+    output_image = bytearray(len(image_data))
+    # Mirror and downscale image
+    for h_key in range(0, height, 2):
+        for w_key in range(0, width, 2):
+            output_pixel_index = int(
+                ((h_key * width / 4) * channels) + ((w_key / 2) * channels)
+            )
+            input_pixel_index = (h_key * width * channels) + (
+                (width - w_key) * channels
+            )
+            output_image[output_pixel_index : output_pixel_index + channels] = (
+                image_data[input_pixel_index : input_pixel_index + channels]
+            )
 
-    communication_utils.write_shm(output_shm, image_data)
+    communication_utils.write_shm(output_shm, output_image)
 
-    return output_shm.id
+    return output_shm.id, int(width / 2), int(height / 2), channels
 
 
 def main():
@@ -55,15 +70,20 @@ def main():
             continue
 
         image_header = msgpack.unpackb(input_message)
-        output_shm_id = parseImageFromSHM(
+        print("EXAMPLE PREPROCESSOR: Received input message: ", image_header)
+
+        # Process image
+        output_shm_id, width, height, channels = parseImageFromSHM(
             image_header["SHMKey"],
             image_header["Width"],
             image_header["Height"],
             image_header["Channels"],
         )
 
-        print("EXAMPLE PREPROCESSOR: Received input message: ", image_header)
         image_header["SHMID"] = output_shm_id
+        image_header["Width"] = width
+        image_header["Height"] = height
+        image_header["Channels"] = channels
 
         # Write header to respond
         output_message = msgpack.packb(image_header)
