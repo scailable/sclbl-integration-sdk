@@ -21,7 +21,7 @@ LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
             "nxai_plugin/nxai_manager/etc/plugin.log")
 			
 # Add your own project level Edge Impulse API key	
-edge_impulse_api_key = "ei_ac02e87882ebf271af5d5cd6e2182354e6cb44a8b597e894"
+edge_impulse_api_key = "ei_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 # Option autogenerate images every x seconds as an alternative to sending based on p_value
 auto_generator = False
