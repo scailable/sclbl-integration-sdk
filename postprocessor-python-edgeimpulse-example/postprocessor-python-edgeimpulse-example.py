@@ -115,7 +115,7 @@ def main():
     global p_value
     global auto_generator
     global auto_generator_every_seconds
-	global edge_impulse_api_key
+    global edge_impulse_api_key
 
     # Add your own project level Edge Impulse API key
     edgeimpulse.API_KEY = edge_impulse_api_key
