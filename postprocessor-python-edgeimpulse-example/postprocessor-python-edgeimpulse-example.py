@@ -15,14 +15,16 @@ from PIL import Image
 # noinspection PyUnresolvedReferences
 import edgeimpulse
 
-edgeimpulse_api_key = "ei_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 # Set up logging
 LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
             "nxai_plugin/nxai_manager/etc/plugin.log")
+			
+# Add your own project level Edge Impulse API key	
+edge_impulse_api_key = "ei_ac02e87882ebf271af5d5cd6e2182354e6cb44a8b597e894"
 
 # Option autogenerate images every x seconds as an alternative to sending based on p_value
-auto_generator = True
+auto_generator = False
 
 # If auto_generator True, every how many seconds upload an image?
 auto_generator_every_seconds = 1
@@ -42,7 +44,6 @@ p_value = 0.4
 # Initialize plugin and logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
                     filename=LOG_FILE, filemode="w")
-					
 logging.debug("Initializing plugin")
 
 
@@ -114,10 +115,10 @@ def main():
     global p_value
     global auto_generator
     global auto_generator_every_seconds
-	global edgeimpulse_api_key
+	global edge_impulse_api_key
 
     # Add your own project level Edge Impulse API key
-    edgeimpulse.API_KEY = edgeimpulse_api_key
+    edgeimpulse.API_KEY = edge_impulse_api_key
 
     # Start socket listener to receive messages from NXAI runtime
     try:
@@ -203,7 +204,6 @@ def main():
                     upload_sample = True
 
         if upload_sample:
-            upload_sample = False
             logging.info("x")
             # Parse image information
             image_header = msgpack.unpackb(image_header)
@@ -249,4 +249,7 @@ if __name__ == "__main__":
     # Handle interrupt signals
     signal.signal(signal.SIGINT, signalHandler)
     # Start program
-    main()
+    try:
+        main()
+    except Exception as e:
+        logging.error(e, exc_info=True)
