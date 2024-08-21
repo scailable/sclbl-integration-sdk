@@ -76,7 +76,8 @@ Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugin
             "Name":"Example-Postprocessor",
             "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-python-edgeimpulse-example",
             "SocketPath":"/tmp/example-postprocessor.sock",
-            "ReceiveInputTensor": 1
+            "ReceiveInputTensor": 1,
+            "RunLast": false
         }
     ]
 }
@@ -87,6 +88,7 @@ This tells the Edge AI Manager about the postprocessor:
 - **Command** defines how to start the postprocessor
 - **SocketPath** tells the AI Manager where to send data to so the external postprocessor will receive it
 - **ReceiveInputTensor** tells the AI Manager if this postprocessor expects information to access the raw input tensor data
+- **Runlast** indicates when the postprocessor is run. When 'RunLast' is set to false, the external post-processor runs immediately after the model's inference. This means the raw data sent to the post-processor includes the output tensors' names, data, shapes, and data types. If 'RunLast' is set to true or left out, the external post-processor runs later, after the built-in post-processors. In this scenario, the data sent to the external post-processor is already processed, including output scores and bounding boxes (if applicable), scaled to match the original image dimensions rather than the model's processed image.
 
 The socket path is always given as the first command line argument when the application is started. It is therefore best practice for the external postprocessor application to read its socket path from here, instead of defining the data twice.
 

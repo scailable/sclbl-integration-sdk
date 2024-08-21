@@ -19,8 +19,8 @@ import edgeimpulse
 # Set up logging
 LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
             "nxai_plugin/nxai_manager/etc/plugin.log")
-			
-# Add your own project level Edge Impulse API key	
+            
+# Add your own project level Edge Impulse API key   
 edge_impulse_api_key = "ei_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 # Option autogenerate images every x seconds as an alternative to sending based on p_value
@@ -137,8 +137,6 @@ def main():
 
         upload_sample = False
 
-        counter = counter + 1
-
         logging.debug("Wait for message " + str(counter))
         # Wait for input message from runtime
         try:
@@ -147,6 +145,8 @@ def main():
         except socket.timeout:
             # Request timed out. Continue waiting
             continue
+            
+        counter = counter + 1
 
         logging.debug("Message " + str(counter) + "received")
 
