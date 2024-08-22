@@ -19,9 +19,9 @@ import edgeimpulse
 # Set up logging
 LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
             "nxai_plugin/nxai_manager/etc/plugin.log")
-            
+
 # Add your own project level Edge Impulse API key   
-edge_impulse_api_key = "ei_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+edge_impulse_api_key = "ei_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 # Option autogenerate images every x seconds as an alternative to sending based on p_value
 auto_generator = False
@@ -170,11 +170,11 @@ def main():
                     struct.unpack("b" * output_sizes[i], value)
                 )
 
-        logging.debug("Message " + str(counter) + " parsed")
-
-        # Use pformat to format the deep object
-        formatted_object = pformat(parsed_response)
-        logging.debug(f'Parsed response:\n\n{formatted_object}\n\n')
+        if logging.getLogger().isEnabledFor(logging.DEBUG):
+            logging.debug("Message " + str(counter) + " parsed")
+            # Use pformat to format the deep object
+            formatted_object = pformat(parsed_response)
+            logging.debug(f'Parsed response:\n\n{formatted_object}\n\n')
 
         current_time = time.time()
 
