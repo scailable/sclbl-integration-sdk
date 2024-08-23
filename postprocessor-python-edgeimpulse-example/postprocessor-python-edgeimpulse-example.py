@@ -41,11 +41,14 @@ samples_buffer_flush_size = 20
 # Send images below this value to EdgeImpulse. Can be between 0.0 and 1.0
 p_value = 0.4
 
+# Returning data to the AI Manager is not needed for this postprocessor.
+# See also "NoResponse": true value in external_postprocessors.json / README.md
+return_data = False
+
 # Initialize plugin and logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
                     filename=LOG_FILE, filemode="w")
 logging.debug("Initializing plugin")
-
 
 def send_samples_buffer():
     # This function sends the buffered samples to an Edge Impulse instance for data processing.
@@ -126,13 +129,12 @@ def main():
     except OSError:
         pass
     server = communication_utils.startUnixSocketServer(Postprocessor_Socket_Path)
-    # Wait for messages in a loop
-
-    counter = 0
 
     # Get the current time at the start
     start_time = time.time()
-
+    
+    # Wait for messages in a loop
+    counter = 0
     while True:
 
         upload_sample = False
@@ -219,19 +221,20 @@ def main():
                 send_samples_buffer()
         else:
             logging.info(".")
+        
+        if return_data:
+             # Create msgpack formatted message
+            data_types = parsed_response.get("OutputDataTypes")
+            for key in parsed_response['Outputs']:
+                value = parsed_response['Outputs'][key]
+                if data_types[0] == 1:
+                    parsed_response['Outputs'][key] = struct.pack("f" * len(value), *value)
+                elif data_types[0] == 3:
+                    parsed_response['Outputs'][key] = struct.pack("b" * len(value), *value)
+            message_bytes = msgpack.packb(parsed_response)
 
-        # Create msgpack formatted message
-        data_types = parsed_response.get("OutputDataTypes")
-        for key in parsed_response['Outputs']:
-            value = parsed_response['Outputs'][key]
-            if data_types[0] == 1:
-                parsed_response['Outputs'][key] = struct.pack("f" * len(value), *value)
-            elif data_types[0] == 3:
-                parsed_response['Outputs'][key] = struct.pack("b" * len(value), *value)
-        message_bytes = msgpack.packb(parsed_response)
-
-        # Send message back to runtime
-        communication_utils.sendMessageOverConnection(connection, message_bytes)
+            # Send message back to runtime
+            communication_utils.sendMessageOverConnection(connection, message_bytes)
 
 
 def signalHandler(sig, _):
