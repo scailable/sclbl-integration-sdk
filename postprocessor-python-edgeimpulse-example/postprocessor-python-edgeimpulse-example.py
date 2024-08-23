@@ -45,7 +45,7 @@ p_value = 0.4
 # See also "NoResponse": true value in external_postprocessors.json / README.md
 return_data = False
 
-# Initialize plugin and logging
+# Initialize plugin and logging, script makes use of INFO and DEBUG levels
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
                     filename=LOG_FILE, filemode="w")
 logging.debug("Initializing plugin")
@@ -191,7 +191,7 @@ def main():
         elif not auto_generator:
 
             # Retrieve the bounding box values
-            bbox_values = parsed_response['Outputs']['bboxes-format:xyxysc;0:class0;1:class1']
+            bbox_values = list(parsed_response['Outputs'].values())[0]
 
             # Number of elements in each bounding box entry (assuming format: x1, y1, x2, y2, score, class)
             num_elements_per_entry = 6
