@@ -3,12 +3,24 @@ import os
 import sys
 import socket
 import signal
+import logging
 from PIL import Image
 import msgpack
 
 # Add the sclbl-utilities python utilities
 script_location = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(script_location, "../sclbl-utilities/python-utilities"))
+
+# Set up logging
+LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
+            "nxai_plugin/nxai_manager/etc/plugin.log")
+
+
+# Initialize plugin and logging, script makes use of INFO and DEBUG levels
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
+                    filename=LOG_FILE, filemode="w")
+logging.debug("EXAMPLE PLUGIN: Initializing plugin")
+
 import communication_utils
 
 # The name of the postprocessor.
@@ -30,7 +42,6 @@ def parseImageFromSHM(shm_key: int, width: int, height: int, channels: int):
 
     return cumulative
 
-
 def main():
     # Start socket listener to receive messages from NXAI runtime
     server = communication_utils.startUnixSocketServer(Postprocessor_Socket_Path)
@@ -48,15 +59,13 @@ def main():
             image_header = communication_utils.receiveMessageOverConnection(connection)
         except socket.timeout:
             # Did not receive image header
-            print(
-                "EXAMPLE PLUGIN: Did not receive image header. Are the settings correct?"
-            )
+            logging.debug("EXAMPLE PLUGIN: Did not receive image header. Are the settings correct?")
             continue
 
         # Parse input message
         input_object = communication_utils.parseInferenceResults(input_message)
 
-        print("Unpacked ", input_object)
+        logging.debug("EXAMPLE PLUGIN: Unpacked: " + input_object)
 
         image_header = msgpack.unpackb(image_header)
         print(image_header)
@@ -72,9 +81,8 @@ def main():
             input_object["Counts"] = {}
         input_object["Counts"]["ImageBytesCumalitive"] = cumulative
 
-        print("EXAMPLE PLUGIN: Received input message: ", input_message)
-
-        print("Packing ", input_object)
+        logging.debug("EXAMPLE PLUGIN: Received input message: " + input_message)
+        logging.debug("EXAMPLE PLUGIN: Packing: " + input_object)
 
         # Write object back to string
         output_message = communication_utils.writeInferenceResults(input_object)
@@ -84,16 +92,19 @@ def main():
 
 
 def signalHandler(sig, _):
-    print("EXAMPLE PLUGIN: Received interrupt signal: ", sig)
+    logging.debug("EXAMPLE PLUGIN: Received interrupt signal: " + str(sig))
     sys.exit(0)
 
 
 if __name__ == "__main__":
-    print("EXAMPLE PLUGIN: Input parameters: ", sys.argv)
+    logging.debug("EXAMPLE PLUGIN: Input parameters: " + str(sys.argv))
     # Parse input arguments
     if len(sys.argv) > 1:
         Postprocessor_Socket_Path = sys.argv[1]
     # Handle interrupt signals
     signal.signal(signal.SIGINT, signalHandler)
     # Start program
-    main()
+    try:
+        main()
+    except Exception as e:
+        logging.error(e, exc_info=True)
