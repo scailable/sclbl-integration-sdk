@@ -1,61 +1,137 @@
-Postprocessor Python Image Example
-==================================
+Edge Impulse Image Uploader
+===========================
 
-This example application provides an example on how to create a Python based postprocessor that can be integrated with the NXAI Edge AI Manager.
-
-# Configuration of example postprocessor
-
-Before building this postprocessor you need enter your API_KEY for the Edge Impulse Project.
-Look for the `edgeimpulse.API_KEY` definition and fill in the key there.
-
-# Postprocessors Control Flow
-
-The normal control flow of a postprocessor is to receive a MessagePack binary message representing the inference results from the NXAI Edge AI Manager, and return the same or an altered version of the received MessagePack message.
-
-This example will show how to access the input tensor which the inference results were generated from for additional analysis or presentation. It is possible to define the postprocessor indicating that the Edge AI Runtime should send additional information to allow the postprocessor to access the input tensor. If this setting is enabled, the Edge AI Manager will send an additional messagePack message after the inference results messages containing the relevant fields. The postprocessor should therefore expect two messages before responding.
-
-An external postprocessor can parse the incoming MessagePack message, do analysis, optionally alter it, and return it. The alterations made by an external postprocessor will be kept and sent to the Network Optix server to be represented as bounding boxes or events.
-
-An external postprocessor is a standalone application which is expected to receive these MessagePack messages and return a MessagePack message with a compatible format. Instructions can be added to a configuration file to handle executing and terminating the application.
-
-# MessagePack schema
-
-The incoming MessagePack message follows a specific schema. If the message is altered, the returned message must follow the same schema. In Json, this schema would look like:
-
-```json
-{
-    "Timestamp": <Timestamp>,
-    "Width": <Width>,
-    "Height": <Height>,
-    "InputIndex": <Index>,
-    "Counts": {
-        <"Class Name">: <Class Count>
-    },
-    "BBoxes_xyxy": {
-        <"Class Name">: [
-            <Coordinates>
-        ]
-    },
-    "Scores": {
-        <"Class Name"> : <Score>
-    }
-}
-```
-
-The image header message contains fields indicating information about the image dimensions and information to access this data:
-
-```json
-{
-    "Width": <Width>,
-    "Height": <Height>,
-    "SHMKey": <SHM Key>,
-    "SHMID": <SHM ID>
-}
-```
-
-A convenience example function is provided showing how to use this data to access the original tensor data in shared memory.
+This example application uses a Python based postprocessor to upload images to Edge Impulse for training, either time based, or based on inference confidence.
 
 # How to use
+
+## Download the integration SDK
+
+You probably have the integration SDK already if you're looking at this readme, the command to get the full integration SDK is as follows:
+
+```shell
+git clone https://github.com/scailable/sclbl-integration-sdk.git --recurse-submodules
+```
+
+If you have downloaded the sdk previously, you can also update to the latest version of the integration SDK while in the directory of the downloaded git repository.
+
+```shell
+git pull --recurse-submodules
+```
+
+## Configuration of example postprocessor
+
+Before building this postprocessor you need to enter your API key for the Edge Impulse Project.
+
+Replace the key in `edge_impulse_api_key` with your own key, you can get your key in Edge Impulse Studio from the "Dashboard > Keys" page
+
+In the python source file find the following line and update the `edge_impulse_api_key`
+
+```python
+# Add your own project level Edge Impulse API key
+edge_impulse_api_key = "ei_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+```
+
+## Use the time based upload
+
+When the `auto_generator` is set to `True` images will be uploaded according to the value in `auto_generator_every_seconds` 
+
+```python
+# Option autogenerate images every x seconds as an alternative to sending based on p_value
+auto_generator = True
+
+# If auto_generator True, every how many seconds upload an image?
+auto_generator_every_seconds = 1
+```
+
+## Use the confidence based upload
+
+When the `auto_generator` is set to `False` images will be uploaded according to the value in `p_value`
+
+```python
+# Option autogenerate images every x seconds as an alternative to sending based on p_value
+auto_generator = False
+
+# ...
+
+# Send images below this value to EdgeImpulse. Can be between 0.0 and 1.0
+p_value = 0.4
+```
+
+## Preparation of dependencies
+
+Install needed dependencies
+
+```shell
+sudo apt install cmake
+sudo apt install g++
+sudo apt install python3-pip
+sudo apt install python3.12-venv
+```
+
+Change into the directory created for the project if you're not already there.
+
+```shell
+cd sclbl-integration-sdk/
+```
+
+Prepare the build directory, while in the project directory.
+
+```shell
+mkdir -p build
+cd build
+```
+
+Set up a python virtual environment (needed on recent ubuntu servers) in the newly created build directory
+
+```shell
+python3 -m venv integrationsdk
+source integrationsdk/bin/activate
+```
+
+## (optionally) Remove other postprocessors for compilation
+
+Edit the `CMakelist.txt` to disable all but the external postprocessor
+
+```shell
+nano ../CMakeLists.txt
+```
+
+It should look similar to this
+
+```shell
+cmake_minimum_required(VERSION 3.10.2)
+
+project(sclbl-integration-examples)
+
+# Add Scailable C Utilities for all subprojects
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/sclbl-utilities)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/sclbl-utilities/include)
+
+# Add Edge Impulse Postprocessor Python project
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/postprocessor-python-edgeimpulse-example)
+
+# Add installation option
+install(TARGETS
+    DESTINATION /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/
+)
+install(PROGRAMS
+    ${CMAKE_CURRENT_BINARY_DIR}/postprocessor-python-edgeimpulse-example/postprocessor-python-edgeimpulse-example
+    DESTINATION /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/
+)
+```
+
+## Compile the postprocessor in python
+
+Build and install the postprocessor, while in the project directory.
+
+```shell
+cmake ..
+make
+cmake --build . --target install
+```
+
+## Install the postprocessor
 
 Once compiled, copy the executable to an accessible directory. A convenience directory within the Edge AI Manager installation is created for this purpose at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors`.
 
@@ -67,7 +143,7 @@ sudo chmod -R 777 /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/
 
 ## Defining the postprocessor
 
-Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/external_postprocessors.json` and add the details of your postprocessor to the root object of that file. For example: 
+Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/external_postprocessors.json` and add the details of your postprocessor to the root object of that file. For example:
 
 ``` json
 {
@@ -98,6 +174,13 @@ The socket path is always given as the first command line argument when the appl
 
 If the postprocessor is defined correctly, its name should appear in the list of postprocessors in the NX Plugin settings. If it is selected in the plugin settings then the Edge AI Runtime will send data to the postprocessor and wait for its output.
 
+## Output logging
+
+There is an output log where the uploads can be tracked in real time from the server.
+
+```shell
+tail -f /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.log
+```
 
 # Licence
 

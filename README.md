@@ -26,7 +26,6 @@ Also make sure that all of these are accessible from PATH.
 
 These applications can be run on any platform on which they can be compiled.
 
-
 ## Getting Started
 
 This project is CMake based, and all its modules can be compiled or gathered with CMake commands. To compile manually:
