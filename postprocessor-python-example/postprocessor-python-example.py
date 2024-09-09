@@ -17,7 +17,7 @@ LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - example - %(message)s',
                     filename=LOG_FILE, filemode="w")
-logging.debug("Initializing example plugin")
+logging.info("Initializing example plugin")
 
 # The name of the postprocessor.
 # This is used to match the definition of the postprocessor with routing.
@@ -46,6 +46,7 @@ Postprocessor_Socket_Path = "/tmp/python-example-postprocessor.sock"
 def main():
     # Start socket listener to receive messages from NXAI runtime
     server = communication_utils.startUnixSocketServer(Postprocessor_Socket_Path)
+    logging.info("startUnixSocketServer", + str(Postprocessor_Socket_Path))
 
     # Wait for messages in a loop
     while True:
@@ -56,7 +57,6 @@ def main():
             input_message, connection = communication_utils.waitForSocketMessage(server)
         except socket.timeout:
             # Request timed out. Continue waiting
-            logging.debug("Socket timed out")
             continue
 
         logging.debug("Received input message")
@@ -85,7 +85,7 @@ def main():
 
 
 def signalHandler(sig, _):
-    logging.debug("Received interrupt signal: " + str(sig))
+    logging.info("Received interrupt signal: " + str(sig))
     sys.exit(0)
 
 
