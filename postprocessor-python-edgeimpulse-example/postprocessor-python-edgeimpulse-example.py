@@ -150,7 +150,7 @@ def main():
             
         counter = counter + 1
 
-        logging.debug("EI PLUGIN: Message " + str(counter) + "received")
+        logging.debug("EI PLUGIN: Message " + str(counter) + " received")
 
         # Parse input message
         parsed_response = msgpack.unpackb(input_message)
@@ -184,8 +184,8 @@ def main():
         if auto_generator and current_time - start_time >= auto_generator_every_seconds:
 
             start_time = current_time
-            logging.info("EI PLUGIN: Add timed sample (every )" + str(auto_generator_every_seconds)
-                         + "(seconds) number " + str(counter) + " to upload queue")
+            logging.info("EI PLUGIN: Add timed sample every " + str(auto_generator_every_seconds)
+                         + " seconds, number " + str(counter) + " to upload queue")
             upload_sample = True
 
         elif not auto_generator:
