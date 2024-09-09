@@ -3,7 +3,6 @@ import sys
 import socket
 import signal
 import logging
-# from pprint import pformat
 
 # Add the sclbl-utilities python utilities
 script_location = os.path.dirname(os.path.realpath(__file__))
@@ -46,7 +45,6 @@ Postprocessor_Socket_Path = "/tmp/python-example-postprocessor.sock"
 def main():
     # Start socket listener to receive messages from NXAI runtime
     server = communication_utils.startUnixSocketServer(Postprocessor_Socket_Path)
-    logging.info("startUnixSocketServer", + str(Postprocessor_Socket_Path))
 
     # Wait for messages in a loop
     while True:
@@ -73,9 +71,7 @@ def main():
             input_object["BBoxes_xyxy"] = {}
         input_object["BBoxes_xyxy"]["test"] = [100.0, 100.0, 200.0, 200.0]
 
-        # Use pformat to format the deep object
-        # formatted_packed_object = pformat(input_object)
-        # logging.debug(f'Packing:\n\n{formatted_packed_object}\n\n')
+        logging.info("Added test bounding box to output")
 
         # Write object back to string
         output_message = communication_utils.writeInferenceResults(input_object)

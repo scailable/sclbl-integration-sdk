@@ -245,7 +245,7 @@ def signalHandler(sig, _):
 
 
 if __name__ == "__main__":
-    logging.info("Input parameters: " + str(sys.argv))
+    logging.debug("Input parameters: " + str(sys.argv))
     # Parse input arguments
     if len(sys.argv) > 1:
         Postprocessor_Socket_Path = sys.argv[1]
