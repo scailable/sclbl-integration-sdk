@@ -21,7 +21,7 @@ The incoming MessagePack message follows a specific schema. If the message is al
 {
     "Timestamp": <Timestamp>,
     "Width": <Width>,
-    "Height": <Hieght>,
+    "Height": <Height>,
     "InputIndex": <Index>,
     "Counts": {
         <"Class Name">: <Class Count>
@@ -42,7 +42,6 @@ The image header message contains fields indicating information about the image 
 ```json
 {
     "Width": <Width>,
-    "Height": <Height>,
     "Height": <Height>,
     "SHMKey": <SHM Key>,
     "SHMID": <SHM ID>

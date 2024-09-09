@@ -20,6 +20,11 @@ To compile, some software packages are required. These can be installed by runni
 ```shell
 sudo apt install cmake
 sudo apt install g++
+```
+
+For the python postprocessors the following is also required
+
+```shell
 sudo apt install python3-pip
 sudo apt install python3.12-venv
 ```
@@ -61,6 +66,12 @@ make
 ```
 
 This will build the default target, which includes the all the example applications.
+
+Before installing make sure the target directory is writable.
+
+```shell
+sudo chmod 777 /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/
+```
 
 To install the generated postprocessor examples to the default postprocessors folder:
 

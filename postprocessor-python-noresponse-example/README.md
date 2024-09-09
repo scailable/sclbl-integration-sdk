@@ -19,7 +19,7 @@ The incoming MessagePack message follows a specific schema. If the message is al
 {
     "Timestamp": <Timestamp>,
     "Width": <Width>,
-    "Height": <Hieght>,
+    "Height": <Height>,
     "InputIndex": <Index>,
     "Counts": {
         <"Class Name">: <Class Count>
