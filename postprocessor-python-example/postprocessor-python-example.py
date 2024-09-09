@@ -2,6 +2,7 @@ import os
 import sys
 import socket
 import signal
+from pprint import pformat
 import logging
 
 # Add the sclbl-utilities python utilities
@@ -54,19 +55,21 @@ def main():
             # Request timed out. Continue waiting
             continue
 
-        logging.debug("EXAMPLE PLUGIN: Received input message: ", input_message)
+        logging.debug("EXAMPLE PLUGIN: Received input message: " + input_message)
 
         # Parse input message
         input_object = communication_utils.parseInferenceResults(input_message)
 
-        logging.debug("Unpacked ", input_object)
+        formatted_unpacked_object = pformat(input_object)
+        logging.debug(f'EXAMPLE PLUGIN: Unpacked:\n\n{formatted_unpacked_object}\n\n')
 
         # Add extra bbox
         if "BBoxes_xyxy" not in input_object:
             input_object["BBoxes_xyxy"] = {}
         input_object["BBoxes_xyxy"]["test"] = [100.0, 100.0, 200.0, 200.0]
 
-        logging.debug("Packing ", input_object)
+        formatted_packed_object = pformat(input_object)
+        logging.debug(f'EXAMPLE PLUGIN: Packing:\n\n{formatted_packed_object}\n\n')
 
         # Write object back to string
         output_message = communication_utils.writeInferenceResults(input_object)
@@ -76,12 +79,12 @@ def main():
 
 
 def signalHandler(sig, _):
-    logging.debug("EXAMPLE PLUGIN: Received interrupt signal: ", sig)
+    logging.debug("EXAMPLE PLUGIN: Received interrupt signal: " + str(sig))
     sys.exit(0)
 
 
 if __name__ == "__main__":
-    logging.debug("EXAMPLE PLUGIN: Input parameters: ", sys.argv)
+    logging.debug("EXAMPLE PLUGIN: Input parameters: " + str(sys.argv))
     # Parse input arguments
     if len(sys.argv) > 1:
         Postprocessor_Socket_Path = sys.argv[1]

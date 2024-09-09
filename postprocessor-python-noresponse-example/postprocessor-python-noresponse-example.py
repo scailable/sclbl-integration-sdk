@@ -2,6 +2,7 @@ import os
 import sys
 import socket
 import signal
+from pprint import pformat
 import logging
 
 # Add the sclbl-utilities python utilities
@@ -55,20 +56,21 @@ def main():
             # Request timed out. Continue waiting
             continue
 
-        logging.debug("NORESPONSE EXAMPLE PLUGIN: Received input message: ", input_message)
+        logging.debug("NORESPONSE EXAMPLE PLUGIN: Received input message: " + input_message)
 
         # Parse input message
         input_object = communication_utils.parseInferenceResults(input_message)
 
-        logging.debug("NORESPONSE EXAMPLE PLUGIN: Unpacked ", input_object)
+        formatted_unpacked_object = pformat(input_object)
+        logging.debug(f'NORESPONSE EXAMPLE PLUGIN: Unpacked:\n\n{formatted_unpacked_object}\n\n')
 
 def signalHandler(sig, _):
-    logging.debug("NORESPONSE EXAMPLE PLUGIN: Received interrupt signal: ", sig)
+    logging.debug("NORESPONSE EXAMPLE PLUGIN: Received interrupt signal: " + str(sig))
     sys.exit(0)
 
 
 if __name__ == "__main__":
-    logging.debug("NORESPONSE EXAMPLE PLUGIN: Input parameters: ", sys.argv)
+    logging.debug("NORESPONSE EXAMPLE PLUGIN: Input parameters: " + str(sys.argv))
     # Parse input arguments
     if len(sys.argv) > 1:
         Postprocessor_Socket_Path = sys.argv[1]

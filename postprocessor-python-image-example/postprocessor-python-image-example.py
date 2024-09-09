@@ -3,6 +3,7 @@ import os
 import sys
 import socket
 import signal
+from pprint import pformat
 import logging
 from PIL import Image
 import msgpack
@@ -65,7 +66,8 @@ def main():
         # Parse input message
         input_object = communication_utils.parseInferenceResults(input_message)
 
-        logging.debug("IMAGE EXAMPLE PLUGIN: Unpacked: " + input_object)
+        formatted_unpacked_object = pformat(input_object)
+        logging.debug(f'IMAGE EXAMPLE PLUGIN: Unpacked:\n\n{formatted_unpacked_object}\n\n')
 
         image_header = msgpack.unpackb(image_header)
         print(image_header)
@@ -82,7 +84,9 @@ def main():
         input_object["Counts"]["ImageBytesCumalitive"] = cumulative
 
         logging.debug("IMAGE EXAMPLE PLUGIN: Received input message: " + input_message)
-        logging.debug("IMAGE EXAMPLE PLUGIN: Packing: " + input_object)
+
+        formatted_packed_object = pformat(input_object)
+        logging.debug(f'IMAGE EXAMPLE PLUGIN: Packing:\n\n{formatted_packed_object}\n\n')
 
         # Write object back to string
         output_message = communication_utils.writeInferenceResults(input_object)
