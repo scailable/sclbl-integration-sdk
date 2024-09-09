@@ -3,13 +3,7 @@ import sys
 import socket
 import signal
 import logging
-import io
-import time
 from pprint import pformat
-import msgpack
-import struct
-from math import prod
-from datetime import datetime
 
 # Add the sclbl-utilities python utilities
 script_location = os.path.dirname(os.path.realpath(__file__))
@@ -52,6 +46,9 @@ Postprocessor_Socket_Path = "/tmp/python-example-postprocessor.sock"
 def main():
     # Start socket listener to receive messages from NXAI runtime
     server = communication_utils.startUnixSocketServer(Postprocessor_Socket_Path)
+
+    logging.debug("EXAMPLE PLUGIN: Start socket listener: " + Postprocessor_Socket_Path)
+
     # Wait for messages in a loop
     while True:
         # Wait for input message from runtime
@@ -59,6 +56,7 @@ def main():
             input_message, connection = communication_utils.waitForSocketMessage(server)
         except socket.timeout:
             # Request timed out. Continue waiting
+            logging.debug("EXAMPLE PLUGIN: Request timed out. Continue waiting")
             continue
 
         logging.debug("EXAMPLE PLUGIN: Received input message: " + input_message)
