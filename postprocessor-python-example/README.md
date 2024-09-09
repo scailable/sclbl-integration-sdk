@@ -3,6 +3,8 @@ Postprocessor Python Example
 
 This example application provides an example on how to create a Python based postprocessor that can be integrated with the NXAI Edge AI Manager.
 
+This plugin adds a 100 x 100 bounding box at 100 from the top and 100 from the left of the camera stream with the label "test".
+
 # Postprocessors Control Flow
 
 The normal control flow of a postprocessor is to receive a MessagePack binary message representing the inference results from the NXAI Edge AI Manager, and return the same or an altered version of the received MessagePack message.
