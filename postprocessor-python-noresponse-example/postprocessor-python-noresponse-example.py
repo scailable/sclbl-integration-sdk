@@ -22,7 +22,7 @@ logging.debug("NORESPONSE EXAMPLE PLUGIN: Initializing plugin")
 
 # The name of the postprocessor.
 # This is used to match the definition of the postprocessor with routing.
-Postprocessor_Name = "Python-Example-Postprocessor"
+Postprocessor_Name = "Python-NoResponse-Example-Postprocessor"
 
 # The socket this postprocessor will listen on.
 # This is always given as the first argument when the process is started
