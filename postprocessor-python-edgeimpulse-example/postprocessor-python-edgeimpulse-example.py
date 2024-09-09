@@ -108,7 +108,7 @@ Postprocessor_Name = "Python-EdgeImpulse-Postprocessor"
 # The socket this postprocessor will listen on.
 # This is always given as the first argument when the process is started
 # But it can be manually defined as well, as long as it is the same as the socket path in the runtime settings
-Postprocessor_Socket_Path = "/tmp/python-example-postprocessor.sock"
+Postprocessor_Socket_Path = "/tmp/python-edgeimpulse-postprocessor.sock"
 
 
 def main():
