@@ -18,7 +18,7 @@ import edgeimpulse
 
 # Set up logging
 LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
-            "nxai_plugin/nxai_manager/etc/plugin.log")
+            "nxai_plugin/nxai_manager/etc/plugin.edgeimpulse.log")
 
 # Add your own project level Edge Impulse API key   
 edge_impulse_api_key = "ei_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
