@@ -19,7 +19,7 @@ LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
                     filename=LOG_FILE, filemode="w")
-logging.debug("EXAMPLE PLUGIN: Initializing plugin")
+logging.debug("IMAGE EXAMPLE PLUGIN: Initializing plugin")
 
 import communication_utils
 
@@ -59,13 +59,13 @@ def main():
             image_header = communication_utils.receiveMessageOverConnection(connection)
         except socket.timeout:
             # Did not receive image header
-            logging.debug("EXAMPLE PLUGIN: Did not receive image header. Are the settings correct?")
+            logging.debug("IMAGE EXAMPLE PLUGIN: Did not receive image header. Are the settings correct?")
             continue
 
         # Parse input message
         input_object = communication_utils.parseInferenceResults(input_message)
 
-        logging.debug("EXAMPLE PLUGIN: Unpacked: " + input_object)
+        logging.debug("IMAGE EXAMPLE PLUGIN: Unpacked: " + input_object)
 
         image_header = msgpack.unpackb(image_header)
         print(image_header)
@@ -81,8 +81,8 @@ def main():
             input_object["Counts"] = {}
         input_object["Counts"]["ImageBytesCumalitive"] = cumulative
 
-        logging.debug("EXAMPLE PLUGIN: Received input message: " + input_message)
-        logging.debug("EXAMPLE PLUGIN: Packing: " + input_object)
+        logging.debug("IMAGE EXAMPLE PLUGIN: Received input message: " + input_message)
+        logging.debug("IMAGE EXAMPLE PLUGIN: Packing: " + input_object)
 
         # Write object back to string
         output_message = communication_utils.writeInferenceResults(input_object)
@@ -92,12 +92,12 @@ def main():
 
 
 def signalHandler(sig, _):
-    logging.debug("EXAMPLE PLUGIN: Received interrupt signal: " + str(sig))
+    logging.debug("IMAGE EXAMPLE PLUGIN: Received interrupt signal: " + str(sig))
     sys.exit(0)
 
 
 if __name__ == "__main__":
-    logging.debug("EXAMPLE PLUGIN: Input parameters: " + str(sys.argv))
+    logging.debug("IMAGE EXAMPLE PLUGIN: Input parameters: " + str(sys.argv))
     # Parse input arguments
     if len(sys.argv) > 1:
         Postprocessor_Socket_Path = sys.argv[1]
