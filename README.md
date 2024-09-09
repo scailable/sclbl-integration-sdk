@@ -17,8 +17,12 @@ These applications can be compiled on any architecture natively in a Linux envir
 
 To compile, some software packages are required. These can be installed by running:
 
-- sudo apt install cmake
-- sudo apt install g++
+```shell
+sudo apt install cmake
+sudo apt install g++
+sudo apt install python3-pip
+sudo apt install python3.12-venv
+```
 
 Also make sure that all of these are accessible from PATH.
 
@@ -33,19 +37,26 @@ This project is CMake based, and all its modules can be compiled or gathered wit
 
 Create and enter build directory:
 
+```shell
+mkdir -p build && cd build
 ```
-mkdir build && cd build
+
+Set up a python virtual environment (needed on recent ubuntu servers) in the newly created build directory
+
+```shell
+python3 -m venv integrationsdk
+source integrationsdk/bin/activate
 ```
 
 Set up CMake configuration:
 
-```
+```shell
 cmake ..
 ```
 
 Build all targets:
 
-```
+```shell
 make
 ```
 
@@ -53,13 +64,13 @@ This will build the default target, which includes the all the example applicati
 
 To install the generated postprocessor examples to the default postprocessors folder:
 
-```
+```shell
 cmake --build . --target install
 ```
 
 Finally, to (re)load your new postprocessor, make sure to restart the NX Server with:
 
-```
+```shell
 sudo service networkoptix-metavms-mediaserver restart
 ```
 
