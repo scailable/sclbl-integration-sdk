@@ -12,7 +12,7 @@ import communication_utils
 
 # Set up logging
 LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
-            "nxai_plugin/nxai_manager/etc/plugin.noresponse.log")
+            "nxai_plugin/nxai_manager/etc/plugin.log")
 
 
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
