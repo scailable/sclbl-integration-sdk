@@ -70,7 +70,7 @@ Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugin
         {
             "Name":"Example-Postprocessor",
             "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-python-image-example",
-            "SocketPath":"/tmp/example-postprocessor.sock",
+            "SocketPath":"/tmp/python-image-postprocessor.sock",
             "ReceiveInputTensor": 1
         }
     ]
@@ -88,7 +88,6 @@ The socket path is always given as the first command line argument when the appl
 ## Selecting to the postprocessor
 
 If the postprocessor is defined correctly, its name should appear in the list of postprocessors in the NX Plugin settings. If it is selected in the plugin settings then the Edge AI Runtime will send data to the postprocessor and wait for its output.
-
 
 # Licence
 
