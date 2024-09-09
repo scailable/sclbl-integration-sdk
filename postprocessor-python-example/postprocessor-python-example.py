@@ -3,7 +3,7 @@ import sys
 import socket
 import signal
 import logging
-from pprint import pformat
+# from pprint import pformat
 
 # Add the sclbl-utilities python utilities
 script_location = os.path.dirname(os.path.realpath(__file__))
@@ -12,12 +12,12 @@ import communication_utils
 
 # Set up logging
 LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
-            "nxai_plugin/nxai_manager/etc/plugin.log")
+            "nxai_plugin/nxai_manager/etc/plugin.example.log")
 
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - example - %(message)s',
                     filename=LOG_FILE, filemode="w")
-logging.debug("EXAMPLE PLUGIN: Initializing plugin")
+logging.debug("Initializing example plugin")
 
 # The name of the postprocessor.
 # This is used to match the definition of the postprocessor with routing.
@@ -47,33 +47,35 @@ def main():
     # Start socket listener to receive messages from NXAI runtime
     server = communication_utils.startUnixSocketServer(Postprocessor_Socket_Path)
 
-    logging.debug("EXAMPLE PLUGIN: Start socket listener: " + Postprocessor_Socket_Path)
-
     # Wait for messages in a loop
     while True:
         # Wait for input message from runtime
+        logging.debug("Waiting for input message")
+
         try:
             input_message, connection = communication_utils.waitForSocketMessage(server)
         except socket.timeout:
             # Request timed out. Continue waiting
-            logging.debug("EXAMPLE PLUGIN: Request timed out. Continue waiting")
+            logging.debug("Socket timed out")
             continue
 
-        logging.debug("EXAMPLE PLUGIN: Received input message: " + input_message)
+        logging.debug("Received input message")
 
         # Parse input message
         input_object = communication_utils.parseInferenceResults(input_message)
 
-        formatted_unpacked_object = pformat(input_object)
-        logging.debug(f'EXAMPLE PLUGIN: Unpacked:\n\n{formatted_unpacked_object}\n\n')
+        # Use pformat to format the deep object
+        # formatted_unpacked_object = pformat(input_object)
+        # logging.debug(f'Unpacked:\n\n{formatted_unpacked_object}\n\n')
 
         # Add extra bbox
         if "BBoxes_xyxy" not in input_object:
             input_object["BBoxes_xyxy"] = {}
         input_object["BBoxes_xyxy"]["test"] = [100.0, 100.0, 200.0, 200.0]
 
-        formatted_packed_object = pformat(input_object)
-        logging.debug(f'EXAMPLE PLUGIN: Packing:\n\n{formatted_packed_object}\n\n')
+        # Use pformat to format the deep object
+        # formatted_packed_object = pformat(input_object)
+        # logging.debug(f'Packing:\n\n{formatted_packed_object}\n\n')
 
         # Write object back to string
         output_message = communication_utils.writeInferenceResults(input_object)
@@ -83,16 +85,19 @@ def main():
 
 
 def signalHandler(sig, _):
-    logging.debug("EXAMPLE PLUGIN: Received interrupt signal: " + str(sig))
+    logging.debug("Received interrupt signal: " + str(sig))
     sys.exit(0)
 
 
 if __name__ == "__main__":
-    logging.debug("EXAMPLE PLUGIN: Input parameters: " + str(sys.argv))
+    logging.debug("Input parameters: " + str(sys.argv))
     # Parse input arguments
     if len(sys.argv) > 1:
         Postprocessor_Socket_Path = sys.argv[1]
     # Handle interrupt signals
     signal.signal(signal.SIGINT, signalHandler)
     # Start program
-    main()
+    try:
+        main()
+    except Exception as e:
+        logging.error(e, exc_info=True)
