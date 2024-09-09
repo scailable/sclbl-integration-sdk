@@ -2,11 +2,22 @@ import os
 import sys
 import socket
 import signal
+import logging
 
 # Add the sclbl-utilities python utilities
 script_location = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(script_location, "../sclbl-utilities/python-utilities"))
 import communication_utils
+
+# Set up logging
+LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
+            "nxai_plugin/nxai_manager/etc/plugin.log")
+
+
+# Initialize plugin and logging, script makes use of INFO and DEBUG levels
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
+                    filename=LOG_FILE, filemode="w")
+logging.debug("NORESPONSE EXAMPLE PLUGIN: Initializing plugin")
 
 # The name of the postprocessor.
 # This is used to match the definition of the postprocessor with routing.
@@ -44,20 +55,20 @@ def main():
             # Request timed out. Continue waiting
             continue
 
-        print("EXAMPLE PLUGIN: Received input message: ", input_message)
+        logging.debug("NORESPONSE EXAMPLE PLUGIN: Received input message: ", input_message)
 
         # Parse input message
         input_object = communication_utils.parseInferenceResults(input_message)
 
-        print("Unpacked ", input_object)
+        logging.debug("NORESPONSE EXAMPLE PLUGIN: Unpacked ", input_object)
 
 def signalHandler(sig, _):
-    print("EXAMPLE PLUGIN: Received interrupt signal: ", sig)
+    logging.debug("NORESPONSE EXAMPLE PLUGIN: Received interrupt signal: ", sig)
     sys.exit(0)
 
 
 if __name__ == "__main__":
-    print("EXAMPLE PLUGIN: Input parameters: ", sys.argv)
+    logging.debug("NORESPONSE EXAMPLE PLUGIN: Input parameters: ", sys.argv)
     # Parse input arguments
     if len(sys.argv) > 1:
         Postprocessor_Socket_Path = sys.argv[1]
