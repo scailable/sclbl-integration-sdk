@@ -206,7 +206,7 @@ def main():
                     upload_sample = True
 
         if upload_sample:
-            logging.info("x")
+            # logging.info("EI PLUGIN: uploading sample")
             # Parse image information
             image_header = msgpack.unpackb(image_header)
 
@@ -219,8 +219,8 @@ def main():
                     samples_buffer.append(output.getvalue())
             if len(samples_buffer) >= samples_buffer_flush_size:
                 send_samples_buffer()
-        else:
-            logging.info(".")
+        # else:
+            # logging.info("EI PLUGIN: skipping sample")
         
         if return_data:
              # Create msgpack formatted message
