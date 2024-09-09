@@ -76,7 +76,9 @@ def main():
         logging.debug(f'IMAGE EXAMPLE PLUGIN: Unpacked:\n\n{formatted_unpacked_object}\n\n')
 
         image_header = msgpack.unpackb(image_header)
-        print(image_header)
+        formatted_image_object = pformat(image_header)
+        logging.debug(f'IMAGE EXAMPLE PLUGIN: image_header:\n\n{formatted_image_object}\n\n')
+
         cumulative = parseImageFromSHM(
             image_header["SHMKey"],
             image_header["Width"],
