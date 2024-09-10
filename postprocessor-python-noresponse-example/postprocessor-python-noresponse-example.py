@@ -77,9 +77,13 @@ def setLogLevel(level):
 def main():
     # Start socket listener to receive messages from NXAI runtime
     server = communication_utils.startUnixSocketServer(Postprocessor_Socket_Path)
+
+    logging.debug("Starting main" + str(Postprocessor_Socket_Path))
     # Wait for messages in a loop
     while True:
         # Wait for input message from runtime
+        logging.debug("Starting loop")
+
         try:
             input_message, _ = communication_utils.waitForSocketMessage(server)
             logging.debug("Received input message")
@@ -93,7 +97,7 @@ def main():
         input_object = communication_utils.parseInferenceResults(input_message)
 
         formatted_unpacked_object = pformat(input_object)
-        logging.info(f'Unpacked:\n\n{formatted_unpacked_object}\n\n')
+        logging.info(f'Unpacked object:\n\n{formatted_unpacked_object}\n\n')
 
 
 def signalHandler(sig, _):
