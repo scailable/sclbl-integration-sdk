@@ -49,16 +49,16 @@ def config():
     logger.info('Reading configuration from:' + CONFIG_FILE)
 
     try:
-        config = configparser.ConfigParser()
-        config.read(CONFIG_FILE)
+        configuration = configparser.ConfigParser()
+        configuration.read(CONFIG_FILE)
 
-        configured_log_level = config.get('common', 'debug_level', fallback = 'INFO')
+        configured_log_level = configuration.get('common', 'debug_level', fallback = 'INFO')
         setLogLevel(configured_log_level)
 
-        for section in config.sections():
+        for section in configuration.sections():
             logger.info('config section: ' + section)
-            for key in config[section]:
-                logger.info('config key: ' + key + ' = ' + config[section][key])
+            for key in configuration[section]:
+                logger.info('config key: ' + key + ' = ' + configuration[section][key])
 
     except Exception as e:
         logger.error(e, exc_info=True)
