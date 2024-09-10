@@ -3,6 +3,8 @@ import sys
 import socket
 import signal
 import logging
+import logging.handlers
+import configparser
 import io
 import time
 from pprint import pformat
@@ -16,15 +18,16 @@ script_location = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(script_location, "../sclbl-utilities/python-utilities"))
 import communication_utils
 
-# Set up logging
+CONFIG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
+               "nxai_plugin/nxai_manager/etc/plugin.noresponse.ini")
+
 LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
-            "nxai_plugin/nxai_manager/etc/plugin.log")
+            "nxai_plugin/nxai_manager/etc/plugin.noresponse.log")
 
 
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - noresponse - %(message)s',
                     filename=LOG_FILE, filemode="w")
-logging.debug("NORESPONSE EXAMPLE PLUGIN: Initializing plugin")
 
 # The name of the postprocessor.
 # This is used to match the definition of the postprocessor with routing.
@@ -49,6 +52,33 @@ Postprocessor_Socket_Path = "/tmp/python-noresponse-postprocessor.sock"
 # 12: //UINT32
 # 13: //UINT64
 
+def config():
+    logger.info('Reading configuration from:' + CONFIG_FILE)
+
+    try:
+        configuration = configparser.ConfigParser()
+        configuration.read(CONFIG_FILE)
+
+        configured_log_level = configuration.get('common', 'debug_level', fallback = 'INFO')
+        setLogLevel(configured_log_level)
+
+        for section in configuration.sections():
+            logger.info('config section: ' + section)
+            for key in configuration[section]:
+                logger.info('config key: ' + key + ' = ' + configuration[section][key])
+
+    except Exception as e:
+        logger.error(e, exc_info=True)
+
+    logger.debug('Read configuration done')
+
+
+def setLogLevel(level):
+    try:
+        logger.setLevel(level)
+    except Exception as e:
+        logger.error(e, exc_info=True)
+
 
 def main():
     # Start socket listener to receive messages from NXAI runtime
@@ -62,25 +92,38 @@ def main():
             # Request timed out. Continue waiting
             continue
 
-        logging.debug("NORESPONSE EXAMPLE PLUGIN: Received input message: " + input_message)
+        logging.debug("Received input message")
 
         # Parse input message
         input_object = communication_utils.parseInferenceResults(input_message)
 
         formatted_unpacked_object = pformat(input_object)
-        logging.debug(f'NORESPONSE EXAMPLE PLUGIN: Unpacked:\n\n{formatted_unpacked_object}\n\n')
+        logging.info(f'Unpacked:\n\n{formatted_unpacked_object}\n\n')
+
 
 def signalHandler(sig, _):
-    logging.debug("NORESPONSE EXAMPLE PLUGIN: Received interrupt signal: " + str(sig))
+    logging.debug("Received interrupt signal: " + str(sig))
     sys.exit(0)
 
 
 if __name__ == "__main__":
-    logging.debug("NORESPONSE EXAMPLE PLUGIN: Input parameters: " + str(sys.argv))
+    ## initialize the logger
+    logger = logging.getLogger(__name__)
+
+    ## read configuration file if it's available
+    config()
+
+    logger.info("Initializing noresponse plugin")
+    logger.debug("Input parameters: " + str(sys.argv))
+
     # Parse input arguments
     if len(sys.argv) > 1:
         Postprocessor_Socket_Path = sys.argv[1]
     # Handle interrupt signals
     signal.signal(signal.SIGINT, signalHandler)
+
     # Start program
-    main()
+    try:
+        main()
+    except Exception as e:
+        logging.error(e, exc_info=True)
