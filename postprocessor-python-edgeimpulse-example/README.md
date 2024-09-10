@@ -21,42 +21,36 @@ git pull --recurse-submodules
 
 ## Configuration of example postprocessor
 
+Create a new config file `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.edgeimpulse.ini` and add your Edge Impulse API key as well as any overrides of the following settings.
+
+```ini
+[common]
+debug_level=INFO
+[edgeimpulse]
+# Add your own project level Edge Impulse API key
+api_key="ei_add_your_key_here"
+# Option autogenerate images every x seconds as an alternative to sending based on p_value
+auto_generator=True
+# If auto_generator True, every how many seconds upload an image?
+auto_generator_every_seconds=1
+# Flush the buffer at this length
+samples_buffer_flush_size=20
+# Send images below this value to EdgeImpulse. Can be between 0.0 and 1.0
+p_value=0.4
+```
+
 Before building this postprocessor you need to enter your API key for the Edge Impulse Project.
 
-Replace the key in `edge_impulse_api_key` with your own key, you can get your key in Edge Impulse Studio from the "Dashboard > Keys" page
+Replace the key in `api_key` with your own key, you can get your key in Edge Impulse Studio from the "Dashboard > Keys" page
 
-In the python source file find the following line and update the `edge_impulse_api_key`
-
-```python
-# Add your own project level Edge Impulse API key
-edge_impulse_api_key = "ei_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-```
 
 ## Use the time based upload
 
 When the `auto_generator` is set to `True` images will be uploaded according to the value in `auto_generator_every_seconds`
 
-```python
-# Option autogenerate images every x seconds as an alternative to sending based on p_value
-auto_generator = True
-
-# If auto_generator True, every how many seconds upload an image?
-auto_generator_every_seconds = 1
-```
-
 ## Use the confidence based upload
 
 When the `auto_generator` is set to `False` images will be uploaded according to the value in `p_value`
-
-```python
-# Option autogenerate images every x seconds as an alternative to sending based on p_value
-auto_generator = False
-
-# ...
-
-# Send images below this value to EdgeImpulse. Can be between 0.0 and 1.0
-p_value = 0.4
-```
 
 ## Preparation of dependencies
 
