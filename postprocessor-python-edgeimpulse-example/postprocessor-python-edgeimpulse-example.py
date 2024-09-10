@@ -130,8 +130,8 @@ def config():
         logger.info('new edge_impulse_api_key: ' + edge_impulse_api_key)
 
         auto_generator = config.get('edgeimpulse', 'auto_generator', fallback=False)
-        auto_generator_every_seconds = float(config.get('edgeimpulse', 'auto_generator_every_seconds', fallback=1))
-        samples_buffer_flush_size = float(config.get('edgeimpulse', 'samples_buffer_flush_size', fallback=20))
+        auto_generator_every_seconds = int(config.get('edgeimpulse', 'auto_generator_every_seconds', fallback=1))
+        samples_buffer_flush_size = int(config.get('edgeimpulse', 'samples_buffer_flush_size', fallback=20))
         p_value = float(config.get('edgeimpulse', 'p_value', fallback=0.4))
 
     except Exception as e:
