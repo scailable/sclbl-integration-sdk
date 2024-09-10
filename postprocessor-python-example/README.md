@@ -47,9 +47,24 @@ It's a good idea to make sure the application and settings file you add is reada
 sudo chmod -R 777 /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors
 ```
 
+## Local configuration
+
+Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.example.ini` and add some overrides for the configuration. 
+
+This plugin only supports changing the debug level between DEBUG, INFO, WARNING, ERROR and CRITICAL
+
+For example:
+
+```ini
+[common]
+debug_level=DEBUG
+```
+
 ## Defining the postprocessor
 
-Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/external_postprocessors.json` and add the details of your postprocessor to the root object of that file. For example: 
+Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/external_postprocessors.json` and add the details of your postprocessor to the root object of that file. 
+
+For example: 
 
 ``` json
 {
