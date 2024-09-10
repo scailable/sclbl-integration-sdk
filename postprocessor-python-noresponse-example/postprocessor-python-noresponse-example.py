@@ -5,13 +5,7 @@ import signal
 import logging
 import logging.handlers
 import configparser
-import io
-import time
 from pprint import pformat
-import msgpack
-import struct
-from math import prod
-from datetime import datetime
 
 # Add the sclbl-utilities python utilities
 script_location = os.path.dirname(os.path.realpath(__file__))
@@ -31,7 +25,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - no
 
 # The name of the postprocessor.
 # This is used to match the definition of the postprocessor with routing.
-Postprocessor_Name = "Python-NoResponse-Example-Postprocessor"
+Postprocessor_Name = "Python-NoResponse-Postprocessor"
 
 # The socket this postprocessor will listen on.
 # This is always given as the first argument when the process is started
@@ -88,11 +82,12 @@ def main():
         # Wait for input message from runtime
         try:
             input_message, _ = communication_utils.waitForSocketMessage(server)
+            logging.debug("Received input message")
+            formatted_input_message = pformat(input_message)
+            logger.debug(f'Input message: :\n\n{formatted_input_message}\n\n')
         except socket.timeout:
             # Request timed out. Continue waiting
             continue
-
-        logging.debug("Received input message")
 
         # Parse input message
         input_object = communication_utils.parseInferenceResults(input_message)
