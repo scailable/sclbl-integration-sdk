@@ -109,11 +109,11 @@ def main():
         # Parse input message
         input_object = communication_utils.parseInferenceResults(input_message)
         formatted_unpacked_object = pformat(input_object)
-        logger.debug(f'Unpacked:\n\n{formatted_unpacked_object}\n\n')
+        logger.info(f'Unpacked input image:\n\n{formatted_unpacked_object}\n\n')
 
         image_header = msgpack.unpackb(image_header)
         formatted_image_object = pformat(image_header)
-        logger.debug(f'image_header:\n\n{formatted_image_object}\n\n')
+        logger.debug(f'Image header:\n\n{formatted_image_object}\n\n')
 
         cumulative = parseImageFromSHM(
             image_header["SHMKey"],
@@ -122,10 +122,23 @@ def main():
             image_header["Channels"],
         )
 
+        # add image header to output
+        if "IH" not in input_object:
+            input_object["IH"] = {}
+        input_object["IH"]["SHMKey"] = image_header["SHMKey"]
+        input_object["IH"]["Width"] = image_header["Width"]
+        input_object["IH"]["Height"] = image_header["Height"]
+        input_object["IH"]["Channels"] = image_header["Channels"]
+
         # Add extra bbox
+        if "BBoxes_xyxy" not in input_object:
+            input_object["BBoxes_xyxy"] = {}
+        input_object["BBoxes_xyxy"]["test"] = [100.0, 100.0, 200.0, 200.0]
+
+        # Add Counts
         if "Counts" not in input_object:
             input_object["Counts"] = {}
-        input_object["Counts"]["ImageBytesCumalitive"] = cumulative
+        input_object["Counts"]["ImageBytesCumulative"] = cumulative
 
         formatted_packed_object = pformat(input_object)
         logger.info(f'Returning packed object:\n\n{formatted_packed_object}\n\n')
