@@ -28,21 +28,20 @@ Create a new config file `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai
 debug_level=INFO
 [edgeimpulse]
 # Add your own project level Edge Impulse API key
-api_key="ei_add_your_key_here"
+api_key = ei_add_your_key_here
 # Option autogenerate images every x seconds as an alternative to sending based on p_value
-auto_generator=True
+auto_generator = True
 # If auto_generator True, every how many seconds upload an image?
-auto_generator_every_seconds=1
+auto_generator_every_seconds = 1
 # Flush the buffer at this length
-samples_buffer_flush_size=20
+samples_buffer_flush_size = 20
 # Send images below this value to EdgeImpulse. Can be between 0.0 and 1.0
-p_value=0.4
+p_value = 0.4
 ```
 
 Before building this postprocessor you need to enter your API key for the Edge Impulse Project.
 
-Replace the key in `api_key` with your own key, you can get your key in Edge Impulse Studio from the "Dashboard > Keys" page
-
+Replace the key in `api_key` with your own key, you can get your key in Edge Impulse Studio from the "Dashboard > Keys" page. Don't use quotes around the key in the configuration file.
 
 ## Use the time based upload
 
@@ -69,7 +68,7 @@ Change into the directory created for the project if you're not already there.
 cd sclbl-integration-sdk/
 ```
 
-Prepare the build directory, while in the project directory.
+Prepare the *build* directory, while in the project directory.
 
 ```shell
 mkdir -p build
@@ -117,7 +116,7 @@ install(PROGRAMS
 
 ## Compile the postprocessor in python
 
-Build and install the postprocessor, while in the project directory.
+Build and install the postprocessor, while in the created *build* directory.
 
 ```shell
 cmake ..
@@ -127,9 +126,11 @@ cmake --build . --target install
 
 ## Install the postprocessor
 
-Once compiled, copy the executable to an accessible directory. A convenience directory within the Edge AI Manager installation is created for this purpose at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors`.
+Once compiled, copy the executable to an accessible directory. 
 
-It's a good idea to make sure the application and settings file you add is readable and executable by the NXAI Edge AI Manager. This can be achieved by running:
+A convenience directory within the Edge AI Manager installation is created for this purpose at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors`.
+
+It's a good idea to make sure the application and settings file you add is readable and executable by the NX AI Edge AI Manager. This can be achieved by running:
 
 ```
 sudo chmod -R 777 /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors
@@ -163,6 +164,20 @@ This tells the Edge AI Manager about the postprocessor:
 - **NoResponse** tells the AI Manager to not wait for a response from this postprocessor
 
 The socket path is always given as the first command line argument when the application is started. It is therefore best practice for the external postprocessor application to read its socket path from here, instead of defining the data twice.
+
+## Restarting the server
+
+Finally, to (re)load your new postprocessor, make sure to restart the NX Server with:
+
+```shell
+sudo service networkoptix-metavms-mediaserver restart
+```
+
+You also want to make sure the postprocessor can be used by the NX AI Manager (this is the mostly same command as earlier)
+
+```
+sudo chmod -R a+x /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/
+```
 
 ## Selecting to the postprocessor
 

@@ -87,6 +87,20 @@ This tells the Edge AI Manager about the postprocessor:
 
 The socket path is always given as the first command line argument when the application is started. It is therefore best practice for the external postprocessor application to read its socket path from here, instead of defining the data twice.
 
+## Restarting the server
+
+Finally, to (re)load your new postprocessor, make sure to restart the NX Server with:
+
+```shell
+sudo service networkoptix-metavms-mediaserver restart
+```
+
+You also want to make sure the postprocessor can be used by the NX AI Manager (this is the mostly same command as earlier)
+
+```
+sudo chmod -R a+x /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/
+```
+
 ## Selecting to the postprocessor
 
 If the postprocessor is defined correctly, its name should appear in the list of postprocessors in the NX Plugin settings. If it is selected in the plugin settings then the Edge AI Runtime will send data to the postprocessor and wait for its output.
