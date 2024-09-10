@@ -18,7 +18,6 @@ import edgeimpulse
 CONFIG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
                "nxai_plugin/nxai_manager/etc/plugin.edgeimpulse.ini")
 
-# Set up logging
 LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
             "nxai_plugin/nxai_manager/etc/plugin.edgeimpulse.log")
 
@@ -112,27 +111,26 @@ def config():
     logger.info('Reading configuration from:' + CONFIG_FILE)
 
     try:
-        config = configparser.ConfigParser()
-        config.read(CONFIG_FILE)
+        configuration = configparser.ConfigParser()
+        configuration.read(CONFIG_FILE)
 
-        configured_log_level = config.get('common', 'debug_level', fallback = 'INFO')
+        configured_log_level = configuration.get('common', 'debug_level', fallback = 'INFO')
         setLogLevel(configured_log_level)
 
-        for section in config.sections():
+        for section in configuration.sections():
             logger.info('config section: ' + section)
-            for key in config[section]:
-                logger.info('config key: ' + key + ' = ' + config[section][key])
+            for key in configuration[section]:
+                logger.info('config key: ' + key + ' = ' + configuration[section][key])
 
         # Override default values from config
-        edge_impulse_api_key = config.get('edgeimpulse', 'api_key', fallback=default_edge_impulse_api_key)
+        edge_impulse_api_key = configuration.get('edgeimpulse', 'api_key', fallback=default_edge_impulse_api_key)
 
-        logger.info('default edge_impulse_api_key: ' + default_edge_impulse_api_key)
         logger.info('new edge_impulse_api_key: ' + edge_impulse_api_key)
 
-        auto_generator = config.get('edgeimpulse', 'auto_generator', fallback=False)
-        auto_generator_every_seconds = int(config.get('edgeimpulse', 'auto_generator_every_seconds', fallback=1))
-        samples_buffer_flush_size = int(config.get('edgeimpulse', 'samples_buffer_flush_size', fallback=20))
-        p_value = float(config.get('edgeimpulse', 'p_value', fallback=0.4))
+        auto_generator = configuration.get('edgeimpulse', 'auto_generator', fallback=False)
+        auto_generator_every_seconds = int(configuration.get('edgeimpulse', 'auto_generator_every_seconds', fallback=1))
+        samples_buffer_flush_size = int(configuration.get('edgeimpulse', 'samples_buffer_flush_size', fallback=20))
+        p_value = float(configuration.get('edgeimpulse', 'p_value', fallback=0.4))
 
     except Exception as e:
         logger.error(e, exc_info=True)
@@ -145,6 +143,7 @@ def setLogLevel(level):
         logger.setLevel(level)
     except Exception as e:
         logger.error(e, exc_info=True)
+
 
 def main():
 
@@ -290,15 +289,16 @@ if __name__ == "__main__":
 
     if (edge_impulse_api_key == default_edge_impulse_api_key):
         logging.error('Edge Impulse Key is not set yet', exc_info=True)
-        exit
+        exit()
     else:
-        logging.error('Edge Impulse Key: ' + edge_impulse_api_key)
+        logging.debug('Edge Impulse Key: ' + edge_impulse_api_key)
 
     # Parse input arguments
     if len(sys.argv) > 1:
         Postprocessor_Socket_Path = sys.argv[1]
     # Handle interrupt signals
     signal.signal(signal.SIGINT, signalHandler)
+
     # Start program
     try:
         main()
