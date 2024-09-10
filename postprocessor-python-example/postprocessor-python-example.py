@@ -3,11 +3,16 @@ import sys
 import socket
 import signal
 import logging
+import logging.handlers
+import configparser
 
 # Add the sclbl-utilities python utilities
 script_location = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(script_location, "../sclbl-utilities/python-utilities"))
 import communication_utils
+
+CONFIG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
+               "nxai_plugin/nxai_manager/etc/plugin.example.ini")
 
 # Set up logging
 LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
@@ -16,7 +21,6 @@ LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - example - %(message)s',
                     filename=LOG_FILE, filemode="w")
-logging.info("Initializing example plugin")
 
 # The name of the postprocessor.
 # This is used to match the definition of the postprocessor with routing.
@@ -41,6 +45,33 @@ Postprocessor_Socket_Path = "/tmp/python-example-postprocessor.sock"
 # 12: //UINT32
 # 13: //UINT64
 
+def config():
+    logger.info('Reading configuration from:' + CONFIG_FILE)
+
+    try:
+        config = configparser.ConfigParser()
+        config.read(CONFIG_FILE)
+
+        configured_log_level = config.get('common', 'debug_level', fallback = 'INFO')
+        setLogLevel(configured_log_level)
+
+        for section in config.sections():
+            logger.info('config section: ' + section)
+            for key in config[section]:
+                logger.info('config key: ' + key + ' = ' + config[section][key])
+
+    except Exception as e:
+        logger.error(e, exc_info=True)
+
+    logger.debug('Read configuration done')
+
+
+def setLogLevel(level):
+    try:
+        logger.setLevel(level)
+    except Exception as e:
+        logger.error(e, exc_info=True)
+
 
 def main():
     # Start socket listener to receive messages from NXAI runtime
@@ -49,7 +80,7 @@ def main():
     # Wait for messages in a loop
     while True:
         # Wait for input message from runtime
-        logging.debug("Waiting for input message")
+        logger.debug("Waiting for input message")
 
         try:
             input_message, connection = communication_utils.waitForSocketMessage(server)
@@ -57,7 +88,7 @@ def main():
             # Request timed out. Continue waiting
             continue
 
-        logging.debug("Received input message")
+        logger.debug("Received input message")
 
         # Parse input message
         input_object = communication_utils.parseInferenceResults(input_message)
@@ -71,7 +102,7 @@ def main():
             input_object["BBoxes_xyxy"] = {}
         input_object["BBoxes_xyxy"]["test"] = [100.0, 100.0, 200.0, 200.0]
 
-        logging.info("Added test bounding box to output")
+        logger.info("Added test bounding box to output")
 
         # Write object back to string
         output_message = communication_utils.writeInferenceResults(input_object)
@@ -81,12 +112,20 @@ def main():
 
 
 def signalHandler(sig, _):
-    logging.info("Received interrupt signal: " + str(sig))
+    logger.info("Received interrupt signal: " + str(sig))
     sys.exit(0)
 
 
 if __name__ == "__main__":
-    logging.debug("Input parameters: " + str(sys.argv))
+    ## initialize the logger
+    logger = logging.getLogger(__name__)
+
+    ## read configuration file if it's available
+    config()
+
+    logger.info("Initializing example plugin")
+    logger.debug("Input parameters: " + str(sys.argv))
+
     # Parse input arguments
     if len(sys.argv) > 1:
         Postprocessor_Socket_Path = sys.argv[1]
@@ -96,4 +135,4 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        logging.error(e, exc_info=True)
+        logger.error(e, exc_info=True)
