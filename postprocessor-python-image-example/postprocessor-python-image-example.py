@@ -90,12 +90,13 @@ def main():
 
         try:
             input_message, connection = communication_utils.waitForSocketMessage(server)
+            logger.debug("Received input message")
+            formatted_input_message = pformat(input_message)
+            logger.debug(f'Input message: :\n\n{formatted_input_message}\n\n')
+
         except socket.timeout:
             # Request timed out. Continue waiting
             continue
-
-        formatted_input_message = pformat(input_message)
-        logger.debug(f'Received input message: :\n\n{formatted_input_message}\n\n')
 
         # Since we're also expecting an image, receive the image header
         try:
@@ -107,7 +108,6 @@ def main():
 
         # Parse input message
         input_object = communication_utils.parseInferenceResults(input_message)
-
         formatted_unpacked_object = pformat(input_object)
         logger.debug(f'Unpacked:\n\n{formatted_unpacked_object}\n\n')
 
@@ -128,7 +128,7 @@ def main():
         input_object["Counts"]["ImageBytesCumalitive"] = cumulative
 
         formatted_packed_object = pformat(input_object)
-        logger.debug(f'Packing:\n\n{formatted_packed_object}\n\n')
+        logger.info(f'Returning packed object:\n\n{formatted_packed_object}\n\n')
 
         # Write object back to string
         output_message = communication_utils.writeInferenceResults(input_object)
@@ -138,7 +138,7 @@ def main():
 
 
 def signalHandler(sig, _):
-    logger.debug("Received interrupt signal: " + str(sig))
+    logger.info("Received interrupt signal: " + str(sig))
     sys.exit(0)
 
 
@@ -149,7 +149,7 @@ if __name__ == "__main__":
     ## read configuration file if it's available
     config()
 
-    logger.info("Initializing example plugin")
+    logger.info("Initializing image plugin")
     logger.debug("Input parameters: " + str(sys.argv))
 
     # Parse input arguments
