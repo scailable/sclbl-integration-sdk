@@ -86,11 +86,16 @@ def main():
     # Wait for messages in a loop
     while True:
         # Wait for input message from runtime
+        logger.debug("Waiting for input message")
+
         try:
             input_message, connection = communication_utils.waitForSocketMessage(server)
         except socket.timeout:
             # Request timed out. Continue waiting
             continue
+
+        formatted_input_message = pformat(input_message)
+        logger.debug(f'Received input message: :\n\n{formatted_input_message}\n\n')
 
         # Since we're also expecting an image, receive the image header
         try:
@@ -121,8 +126,6 @@ def main():
         if "Counts" not in input_object:
             input_object["Counts"] = {}
         input_object["Counts"]["ImageBytesCumalitive"] = cumulative
-
-        logger.debug("Received input message: " + input_message)
 
         formatted_packed_object = pformat(input_object)
         logger.debug(f'Packing:\n\n{formatted_packed_object}\n\n')
