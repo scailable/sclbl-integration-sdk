@@ -17,7 +17,10 @@ The workflow is as follows:
 
 For this example to work, you need to ensure that you have assigned the Face locator model on your edge device from the Nx AI Cloud. 
 
-You also need an AWS account and the associated Access Key and Access Secret.
+You also need an AWS account and the associated Access Key and Access Secret. 
+Please refer to the amazon AWS documentation on how to get these keys.
+The user needs `AmazonRekognitionReadOnlyAccess` to use the features in this demo.
+Amazon usage charges may apply.
 
 # How To Use
 
@@ -31,12 +34,21 @@ sudo chmod -R 777 /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/
 
 ## Local configuration
 
+There are two configuration files you need to set for Amazon AWS to run this demo. 
+
 You need to set your AWS credential keys in the configuration file at `~/.aws/credentials`:
 
 ```ini
 [default]
 aws_access_key_id=acced_key
 aws_secret_access_key=secret_access_key
+```
+
+Also set a region for AWS in `~/.aws/config`
+
+```ini
+[default]
+region=us-east-1
 ```
 
 You can configure other settings in the configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.cloud-inference.ini`:

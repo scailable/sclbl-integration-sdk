@@ -2,6 +2,7 @@ import boto3
 
 rekognition_client = None
 
+
 def create_session(logger, rekognition_client = None):
 
     logger.info("Creating session to AWS")
@@ -12,6 +13,11 @@ def create_session(logger, rekognition_client = None):
         # [default]
         # aws_access_key_id=acced_key
         # aws_secret_access_key=secret_access_key
+        #
+        # and  create configuration in ~/.aws/config
+        #
+        # [default]
+        # region=us-east-1
 
         session = boto3.Session()
 
@@ -40,7 +46,12 @@ def classify_faces(image_path, logger):
                 },
                 Attributes=['GENDER', 'EMOTIONS', 'AGE_RANGE', 'SUNGLASSES', 'SMILE']
             )
+
         faces = response['FaceDetails']
+
+        facedescription = f', '.join(f"{k}:{v}" for k, v in faces.items())
+        logger.info(f"Description joined: {facedescription}")
+
         for face in faces:
             age_range = face['AgeRange']
             gender = face['Gender']
@@ -49,8 +60,12 @@ def classify_faces(image_path, logger):
             emotions = face['Emotions']
 
         age = age_to_word(age_range)
+
         his_her = 'his' if gender['Value'].lower() == 'male' else 'her'
         description = f"A {gender['Value'].lower()} in {his_her} {age} feeling {emotions[0]['Type'].lower()}."
+
+        logger.info(f"Description: {description}")
+
         return description
 
     except Exception as e:

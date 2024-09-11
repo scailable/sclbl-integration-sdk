@@ -152,9 +152,8 @@ def main():
             description = classify_faces(path, logger)
 
             if description is None:
+                logger.info('No description for this face.')
                 continue
-
-            logger.info('Got description ' + description)
 
             # Add the description to the object
             if description not in input_object:
@@ -194,13 +193,12 @@ if __name__ == "__main__":
 
     global rekognition_client
 
-    if rekognition_client is None:
-        try:
-            rekognition_client = create_session(logger)
-        except Exception as e:
-            logger.error(e, exc_info=True)
+    try:
+        rekognition_client = create_session(logger)
+    except Exception as e:
+        logger.error(e, exc_info=True)
 
-    if rekognition_client is not None:
+    if rekognition_client:
         logging.debug('AWS Session started')
     else:
         logging.error('AWS session failed')
