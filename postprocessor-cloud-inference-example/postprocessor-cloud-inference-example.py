@@ -1,4 +1,3 @@
-import json
 import os
 import sys
 import socket
@@ -92,12 +91,15 @@ def setLogLevel(level):
 
 
 def signalHandler(sig, _):
-    logger.debug("Received interrupt signal: ", sig)
+    logging.info("Received interrupt signal: " + str(sig))
     sys.exit(0)
 
 
 def main():
 
+    global aws_access_key_id
+    global aws_secret_access_key
+    global region_name
     global image_path
 
     # Start socket listener to receive messages from NXAI runtime
@@ -145,9 +147,14 @@ def main():
             cropped_image = image.crop((x1, y1, x2, y2))
             cropped_image.save(path)
 
-            description = classify_faces(path)
+            logger.info('Classifying image ' + path)
+
+            description = classify_faces(path, aws_access_key_id, aws_secret_access_key, region_name, logger)
+
             if description is None:
                 continue
+
+            logger.info('Got description ' + description)
 
             # Add the description to the object
             if description not in input_object:
@@ -165,8 +172,6 @@ def main():
         faces = np.delete(faces, faces_to_delete, axis=0)
         input_object['BBoxes_xyxy']['face'] = faces.flatten().tolist()
 
-
-        logger.info("Added faces to object:", input_object)
         formatted_packed_object = pformat(input_object)
         logger.debug(f'Returning packed object:\n\n{formatted_packed_object}\n\n')
 
@@ -184,7 +189,7 @@ if __name__ == "__main__":
     ## read configuration file if it's available
     config()
 
-    logger.info("Initializing example plugin")
+    logger.info("Initializing cloud interference plugin")
     logger.debug("Input parameters: " + str(sys.argv))
 
     if (aws_access_key_id == False):
