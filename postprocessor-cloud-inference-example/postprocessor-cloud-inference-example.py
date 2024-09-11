@@ -192,21 +192,19 @@ if __name__ == "__main__":
     logger.info("Initializing cloud interference plugin")
     logger.debug("Input parameters: " + str(sys.argv))
 
-    # global rekognition_client
-    #
-    # if rekognition_client is None:
-    #     try:
-    #         rekognition_client = create_session(logger)
-    #     except Exception as e:
-    #         logger.error(e, exc_info=True)
-    #
-    # if rekognition_client is not None:
-    #     logging.debug('AWS Session started')
-    # else:
-    #     logging.error('AWS session failed')
-    #     exit()
+    global rekognition_client
 
-    exit(1)
+    if rekognition_client is None:
+        try:
+            rekognition_client = create_session(logger)
+        except Exception as e:
+            logger.error(e, exc_info=True)
+
+    if rekognition_client is not None:
+        logging.debug('AWS Session started')
+    else:
+        logging.error('AWS session failed')
+        exit()
 
     # Parse input arguments
     if len(sys.argv) > 1:
