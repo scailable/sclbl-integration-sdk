@@ -21,7 +21,6 @@ You also need an AWS account and the associated Access Key and Access Secret.
 
 # How To Use
 
-
 Once compiled, copy the executable to an accessible directory. A convenience directory within the Edge AI Manager installation is created for this purpose at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors`.
 
 It's a good idea to make sure the application and settings file you add is readable and executable by the NXAI Edge AI Manager. This can be achieved by running:
@@ -32,18 +31,19 @@ sudo chmod -R 777 /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/
 
 ## Local configuration
 
-You need to set your AWS credential keys in the configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.cloud-inference.ini`:
+You need to set your AWS credential keys in the configuration file at `~/.aws/credentials`:
+
+```ini
+[default]
+aws_access_key_id=acced_key
+aws_secret_access_key=secret_access_key
+```
+
+You can configure other settings in the configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.cloud-inference.ini`:
 
 ```ini
 [common]
 debug_level=DEBUG
-[cloud]
-# Add your own AWS access key
-aws_access_key_id=your_aws_access_key
-# Add your own AWS access secret
-aws_secret_access_key=your_aws_access_secret
-# Add your AWS region
-region_name=us-east-1
 [inference]
 image_path=/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/face.png
 ```

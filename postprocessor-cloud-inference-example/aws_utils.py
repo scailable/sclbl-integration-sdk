@@ -2,19 +2,22 @@ import boto3
 
 rekognition_client = None
 
-def create_session(aws_access_key_id, aws_secret_access_key, region_name, logger, rekognition_client = None):
+def create_session(logger, rekognition_client = None):
 
     logger.info("Creating session to AWS")
 
     try:
-        session = boto3.Session(
-            aws_access_key_id=aws_access_key_id,
-            aws_secret_access_key=aws_secret_access_key,
-            region_name=region_name
-        )
+        # create configuration in ~/.aws/credentials
+        #
+        # [default]
+        # aws_access_key_id=acced_key
+        # aws_secret_access_key=secret_access_key
+
+        session = boto3.Session()
 
         new_rekognition_client = session.client('rekognition')
-        logger.info("Created session to AWS")
+
+        logger.info("Created session rekognition to AWS")
 
     except Exception as e:
         logger.error(f"Error: {e}")
@@ -22,12 +25,12 @@ def create_session(aws_access_key_id, aws_secret_access_key, region_name, logger
     return new_rekognition_client
 
 
-def classify_faces(image_path, aws_access_key_id, aws_secret_access_key, region_name, logger):
+def classify_faces(image_path, logger):
 
     global rekognition_client
 
     if rekognition_client is None:
-        rekognition_client = create_session(aws_access_key_id, aws_secret_access_key, region_name, logger)
+        rekognition_client = create_session(logger)
 
     try:
         with open(image_path, 'rb') as image:

@@ -10,7 +10,7 @@ from PIL import Image
 import msgpack
 import struct
 import numpy as np
-from aws_utils import classify_faces
+from aws_utils import classify_faces, create_session
 
 # Add the sclbl-utilities python utilities
 script_location = os.path.dirname(os.path.realpath(__file__))
@@ -149,7 +149,7 @@ def main():
 
             logger.info('Classifying image ' + path)
 
-            description = classify_faces(path, aws_access_key_id, aws_secret_access_key, region_name, logger)
+            description = classify_faces(path, logger)
 
             if description is None:
                 continue
@@ -192,11 +192,21 @@ if __name__ == "__main__":
     logger.info("Initializing cloud interference plugin")
     logger.debug("Input parameters: " + str(sys.argv))
 
-    if (aws_access_key_id == False):
-        logging.error('AWS Key is not set yet', exc_info=True)
-        exit()
-    else:
-        logging.debug('AWS Key: ' + aws_access_key_id)
+    # global rekognition_client
+    #
+    # if rekognition_client is None:
+    #     try:
+    #         rekognition_client = create_session(logger)
+    #     except Exception as e:
+    #         logger.error(e, exc_info=True)
+    #
+    # if rekognition_client is not None:
+    #     logging.debug('AWS Session started')
+    # else:
+    #     logging.error('AWS session failed')
+    #     exit()
+
+    exit(1)
 
     # Parse input arguments
     if len(sys.argv) > 1:
