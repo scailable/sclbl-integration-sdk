@@ -3,6 +3,10 @@ import os
 import sys
 import socket
 import signal
+import logging
+import logging.handlers
+import configparser
+from pprint import pformat
 from PIL import Image
 import msgpack
 import struct
@@ -14,14 +18,25 @@ script_location = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(script_location, "../sclbl-utilities/python-utilities"))
 import communication_utils
 
+CONFIG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
+               "nxai_plugin/nxai_manager/etc/plugin.cloud-inference.ini")
+
+# Set up logging
+LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
+            "nxai_plugin/nxai_manager/etc/plugin.cloud-inference.log")
+
+# Initialize plugin and logging, script makes use of INFO and DEBUG levels
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - cloud inference - %(message)s',
+                    filename=LOG_FILE, filemode="w")
+
 # The name of the postprocessor.
 # This is used to match the definition of the postprocessor with routing.
-Postprocessor_Name = "Python-Example-Postprocessor"
+Postprocessor_Name = "Cloud-Inference-Postprocessor"
 
 # The socket this postprocessor will listen on.
 # This is always given as the first argument when the process is started
 # But it can be manually defined as well, as long as it is the same as the socket path in the runtime settings
-Postprocessor_Socket_Path = "/tmp/python-example-postprocessor.sock"
+Postprocessor_Socket_Path = "/tmp/python-cloud-inference-postprocessor.sock"
 
 
 def parseImageFromSHM(shm_key: int, width: int, height: int, channels: int):
@@ -31,18 +46,67 @@ def parseImageFromSHM(shm_key: int, width: int, height: int, channels: int):
         image_array = list(struct.unpack("B" * image_size, image_data))
         image_array = np.array(image_array).reshape((height, width, channels)).astype('uint8')
     except Exception as e:
-        print("Failed to parse image from shared memory: ", e)
+        logger.debug("Failed to parse image from shared memory: ", e)
         return None
 
     return image_array
 
 
+def config():
+
+    global aws_access_key_id
+    global aws_secret_access_key
+    global region_name
+    global image_path
+
+    logger.info('Reading configuration from:' + CONFIG_FILE)
+
+    try:
+        configuration = configparser.ConfigParser()
+        configuration.read(CONFIG_FILE)
+
+        configured_log_level = configuration.get('common', 'debug_level', fallback = 'INFO')
+        setLogLevel(configured_log_level)
+
+        for section in configuration.sections():
+            logger.info('config section: ' + section)
+            for key in configuration[section]:
+                logger.info('config key: ' + key + ' = ' + configuration[section][key])
+
+        aws_access_key_id = configuration.get('cloud', 'aws_access_key_id', fallback=False)
+        aws_secret_access_key = configuration.get('cloud', 'aws_secret_access_key', fallback=False)
+        region_name = configuration.get('cloud', 'region_name', fallback=False)
+        image_path = configuration.get('inference', 'image_path', fallback='/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/face.png')
+
+    except Exception as e:
+        logger.error(e, exc_info=True)
+
+    logger.debug('Read configuration done')
+
+
+def setLogLevel(level):
+    try:
+        logger.setLevel(level)
+    except Exception as e:
+        logger.error(e, exc_info=True)
+
+
+def signalHandler(sig, _):
+    logger.debug("Received interrupt signal: ", sig)
+    sys.exit(0)
+
+
 def main():
+
+    global image_path
+
     # Start socket listener to receive messages from NXAI runtime
     server = communication_utils.startUnixSocketServer(Postprocessor_Socket_Path)
     # Wait for messages in a loop
     while True:
         # Wait for input message from runtime
+        logger.debug("Waiting for input message")
+
         try:
             input_message, connection = communication_utils.waitForSocketMessage(server)
         except socket.timeout:
@@ -54,9 +118,7 @@ def main():
             image_header = communication_utils.receiveMessageOverConnection(connection)
         except socket.timeout:
             # Did not receive image header
-            print(
-                "EXAMPLE PLUGIN: Did not receive image header. Are the settings correct?"
-            )
+            logger.debug("Did not receive image header. Are the settings correct?")
             continue
 
         # Parse input message
@@ -78,7 +140,7 @@ def main():
 
         faces_to_delete = []
         for i, face in enumerate(faces):
-            path = '/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/face.png'
+            path = image_path
             x1, y1, x2, y2 = face
             cropped_image = image.crop((x1, y1, x2, y2))
             cropped_image.save(path)
@@ -103,6 +165,11 @@ def main():
         faces = np.delete(faces, faces_to_delete, axis=0)
         input_object['BBoxes_xyxy']['face'] = faces.flatten().tolist()
 
+
+        logger.info("Added faces to object:", input_object)
+        formatted_packed_object = pformat(input_object)
+        logger.debug(f'Returning packed object:\n\n{formatted_packed_object}\n\n')
+
         # Write object back to string
         output_message = communication_utils.writeInferenceResults(input_object)
 
@@ -110,17 +177,29 @@ def main():
         communication_utils.sendMessageOverConnection(connection, output_message)
 
 
-def signalHandler(sig, _):
-    print("EXAMPLE PLUGIN: Received interrupt signal: ", sig)
-    sys.exit(0)
-
-
 if __name__ == "__main__":
-    print("EXAMPLE PLUGIN: Input parameters: ", sys.argv)
+    ## initialize the logger
+    logger = logging.getLogger(__name__)
+
+    ## read configuration file if it's available
+    config()
+
+    logger.info("Initializing example plugin")
+    logger.debug("Input parameters: " + str(sys.argv))
+
+    if (aws_access_key_id == False):
+        logging.error('AWS Key is not set yet', exc_info=True)
+        exit()
+    else:
+        logging.debug('AWS Key: ' + aws_access_key_id)
+
     # Parse input arguments
     if len(sys.argv) > 1:
         Postprocessor_Socket_Path = sys.argv[1]
     # Handle interrupt signals
     signal.signal(signal.SIGINT, signalHandler)
     # Start program
-    main()
+    try:
+        main()
+    except Exception as e:
+        logger.error(e, exc_info=True)

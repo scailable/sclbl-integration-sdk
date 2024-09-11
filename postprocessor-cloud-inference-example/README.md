@@ -15,17 +15,12 @@ The workflow is as follows:
 
 ## Requirements
 
-For this example to work, you need to ensure that you have assigned the Face locator model on your edge device from the Nx AI Cloud.   
-Additionally, you need to set your AWS credential keys in the [aws_utils.py](aws_utils.py) file.
-```python
-session = boto3.Session(
-    aws_access_key_id='',  # Specify your access key
-    aws_secret_access_key='', # Specify your secret key
-    region_name='us-east-1'  # Specify your region
-)
-```
+For this example to work, you need to ensure that you have assigned the Face locator model on your edge device from the Nx AI Cloud. 
+
+You also need an AWS account and the associated Access Key and Access Secret.
 
 # How To Use
+
 
 Once compiled, copy the executable to an accessible directory. A convenience directory within the Edge AI Manager installation is created for this purpose at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors`.
 
@@ -33,6 +28,24 @@ It's a good idea to make sure the application and settings file you add is reada
 
 ```
 sudo chmod -R 777 /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors
+```
+
+## Local configuration
+
+You need to set your AWS credential keys in the configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.cloud-inference.ini`:
+
+```ini
+[common]
+debug_level=DEBUG
+[cloud]
+# Add your own AWS access key
+aws_access_key_id=your_aws_access_key
+# Add your own AWS access secret
+aws_secret_access_key=your_aws_access_secret
+# Add your AWS region
+region_name=us-east-1
+[inference]
+image_path=/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/face.png
 ```
 
 ## Defining the postprocessor
@@ -43,9 +56,9 @@ Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugin
 {
     "externalPostprocessors": [
         {
-            "Name":"Example-Postprocessor",
+            "Name":"Cloud-Inference-Postprocessor",
             "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-cloud-inference-example",
-            "SocketPath":"/tmp/example-postprocessor.sock",
+            "SocketPath":"/tmp/python-cloud-inference-postprocessor.sock",
             "ReceiveInputTensor": 1
         }
     ]
@@ -57,6 +70,24 @@ This tells the Edge AI Manager about the postprocessor:
 - **Command** defines how to start the postprocessor
 - **SocketPath** tells the AI Manager where to send data to so the external postprocessor will receive it
 - **ReceiveInputTensor** tells the AI Manager if this postprocessor expects information to access the raw input tensor data
+
+## Restarting the server
+
+Finally, to (re)load your new postprocessor, make sure to restart the NX Server with:
+
+```shell
+sudo service networkoptix-metavms-mediaserver restart
+```
+
+You also want to make sure the postprocessor can be used by the NX AI Manager (this is the mostly same command as earlier)
+
+```
+sudo chmod -R a+x /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/
+```
+
+## Selecting to the postprocessor
+
+If the postprocessor is defined correctly, its name should appear in the list of postprocessors in the NX Plugin settings. If it is selected in the plugin settings then the Edge AI Runtime will send data to the postprocessor and wait for its output.
 
 # Licence
 

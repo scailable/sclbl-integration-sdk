@@ -84,11 +84,11 @@ def main():
 
         try:
             input_message, connection = communication_utils.waitForSocketMessage(server)
+            logger.debug("Received input message")
         except socket.timeout:
             # Request timed out. Continue waiting
             continue
 
-        logger.debug("Received input message")
 
         # Parse input message
         input_object = communication_utils.parseInferenceResults(input_message)
