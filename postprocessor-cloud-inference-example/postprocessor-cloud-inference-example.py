@@ -38,7 +38,7 @@ Postprocessor_Name = "Cloud-Inference-Postprocessor"
 Postprocessor_Socket_Path = "/tmp/python-cloud-inference-postprocessor.sock"
 
 
-def parseImageFromSHM(shm_key: int, width: int, height: int, channels: int):
+def parse_image_from_shm(shm_key: int, width: int, height: int, channels: int):
     try:
         image_data = communication_utils.read_shm(shm_key)
         image_size = width * height * channels
@@ -65,7 +65,7 @@ def config():
         configuration.read(CONFIG_FILE)
 
         configured_log_level = configuration.get('common', 'debug_level', fallback = 'INFO')
-        setLogLevel(configured_log_level)
+        set_log_level(configured_log_level)
 
         for section in configuration.sections():
             logger.info('config section: ' + section)
@@ -83,14 +83,14 @@ def config():
     logger.debug('Read configuration done')
 
 
-def setLogLevel(level):
+def set_log_level(level):
     try:
         logger.setLevel(level)
     except Exception as e:
         logger.error(e, exc_info=True)
 
 
-def signalHandler(sig, _):
+def signal_handler(sig, _):
     logging.info("Received interrupt signal: " + str(sig))
     sys.exit(0)
 
@@ -127,7 +127,7 @@ def main():
         input_object = communication_utils.parseInferenceResults(input_message)
 
         image_header = msgpack.unpackb(image_header)
-        image_array = parseImageFromSHM(
+        image_array = parse_image_from_shm(
             image_header["SHMKey"],
             image_header["Width"],
             image_header["Height"],
@@ -208,7 +208,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         Postprocessor_Socket_Path = sys.argv[1]
     # Handle interrupt signals
-    signal.signal(signal.SIGINT, signalHandler)
+    signal.signal(signal.SIGINT, signal_handler)
     # Start program
     try:
         main()

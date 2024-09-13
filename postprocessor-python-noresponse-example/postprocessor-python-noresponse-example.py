@@ -54,7 +54,7 @@ def config():
         configuration.read(CONFIG_FILE)
 
         configured_log_level = configuration.get('common', 'debug_level', fallback = 'INFO')
-        setLogLevel(configured_log_level)
+        set_log_level(configured_log_level)
 
         for section in configuration.sections():
             logger.info('config section: ' + section)
@@ -67,11 +67,16 @@ def config():
     logger.debug('Read configuration done')
 
 
-def setLogLevel(level):
+def set_log_level(level):
     try:
         logger.setLevel(level)
     except Exception as e:
         logger.error(e, exc_info=True)
+
+
+def signal_handler(sig, _):
+    logging.debug("Received interrupt signal: " + str(sig))
+    sys.exit(0)
 
 
 def main():
@@ -100,11 +105,6 @@ def main():
         logging.info(f'Unpacked object:\n\n{formatted_unpacked_object}\n\n')
 
 
-def signalHandler(sig, _):
-    logging.debug("Received interrupt signal: " + str(sig))
-    sys.exit(0)
-
-
 if __name__ == "__main__":
     ## initialize the logger
     logger = logging.getLogger(__name__)
@@ -119,7 +119,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         Postprocessor_Socket_Path = sys.argv[1]
     # Handle interrupt signals
-    signal.signal(signal.SIGINT, signalHandler)
+    signal.signal(signal.SIGINT, signal_handler)
 
     # Start program
     try:

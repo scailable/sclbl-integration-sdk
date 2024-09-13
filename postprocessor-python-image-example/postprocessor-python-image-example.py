@@ -42,7 +42,7 @@ Postprocessor_Name = "Python-Image-Example-Postprocessor"
 Postprocessor_Socket_Path = "/tmp/python-image-postprocessor.sock"
 
 
-def parseImageFromSHM(shm_key: int, width: int, height: int, channels: int):
+def parse_image_from_shm(shm_key: int, width: int, height: int, channels: int):
     image_data = communication_utils.read_shm(shm_key)
 
     cumulative = 0
@@ -60,7 +60,7 @@ def config():
         configuration.read(CONFIG_FILE)
 
         configured_log_level = configuration.get('common', 'debug_level', fallback = 'INFO')
-        setLogLevel(configured_log_level)
+        set_log_level(configured_log_level)
 
         for section in configuration.sections():
             logger.info('config section: ' + section)
@@ -73,11 +73,16 @@ def config():
     logger.debug('Read configuration done')
 
 
-def setLogLevel(level):
+def set_log_level(level):
     try:
         logger.setLevel(level)
     except Exception as e:
         logger.error(e, exc_info=True)
+
+
+def signal_handler(sig, _):
+    logger.info("Received interrupt signal: " + str(sig))
+    sys.exit(0)
 
 
 def main():
@@ -115,7 +120,7 @@ def main():
         formatted_image_object = pformat(image_header)
         logger.debug(f'Image header:\n\n{formatted_image_object}\n\n')
 
-        cumulative = parseImageFromSHM(
+        cumulative = parse_image_from_shm(
             image_header["SHMKey"],
             image_header["Width"],
             image_header["Height"],
@@ -150,11 +155,6 @@ def main():
         communication_utils.sendMessageOverConnection(connection, output_message)
 
 
-def signalHandler(sig, _):
-    logger.info("Received interrupt signal: " + str(sig))
-    sys.exit(0)
-
-
 if __name__ == "__main__":
     ## initialize the logger
     logger = logging.getLogger(__name__)
@@ -169,7 +169,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         Postprocessor_Socket_Path = sys.argv[1]
     # Handle interrupt signals
-    signal.signal(signal.SIGINT, signalHandler)
+    signal.signal(signal.SIGINT, signal_handler)
     # Start program
     try:
         main()

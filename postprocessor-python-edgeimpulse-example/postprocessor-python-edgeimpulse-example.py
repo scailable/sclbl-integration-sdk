@@ -39,6 +39,21 @@ return_data = False
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - edge impulse - %(message)s',
                     filename=LOG_FILE, filemode="w")
 
+# Add the sclbl-utilities python utilities
+script_location = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(script_location, "../sclbl-utilities/python-utilities"))
+import communication_utils
+
+# The name of the postprocessor.
+# This is used to match the definition of the postprocessor with routing.
+Postprocessor_Name = "Python-EdgeImpulse-Postprocessor"
+
+# The socket this postprocessor will listen on.
+# This is always given as the first argument when the process is started
+# But it can be manually defined as well, as long as it is the same as the socket path in the runtime settings
+Postprocessor_Socket_Path = "/tmp/python-edgeimpulse-postprocessor.sock"
+
+
 def send_samples_buffer():
     # This function sends the buffered samples to an Edge Impulse instance for data processing.
     # It generates a unique filename for each sample and adds it to a new list of samples while
@@ -85,20 +100,6 @@ def send_samples_buffer():
         logging.info("No samples to send to Edge Impulse. Total {t}".format(t=samples_counter))
 
 
-# Add the sclbl-utilities python utilities
-script_location = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.join(script_location, "../sclbl-utilities/python-utilities"))
-import communication_utils
-
-# The name of the postprocessor.
-# This is used to match the definition of the postprocessor with routing.
-Postprocessor_Name = "Python-EdgeImpulse-Postprocessor"
-
-# The socket this postprocessor will listen on.
-# This is always given as the first argument when the process is started
-# But it can be manually defined as well, as long as it is the same as the socket path in the runtime settings
-Postprocessor_Socket_Path = "/tmp/python-edgeimpulse-postprocessor.sock"
-
 def config():
 
     global edge_impulse_api_key
@@ -115,7 +116,7 @@ def config():
         configuration.read(CONFIG_FILE)
 
         configured_log_level = configuration.get('common', 'debug_level', fallback = 'INFO')
-        setLogLevel(configured_log_level)
+        set_log_level(configured_log_level)
 
         for section in configuration.sections():
             logger.info('config section: ' + section)
@@ -138,11 +139,18 @@ def config():
     logger.debug('Read configuration done')
 
 
-def setLogLevel(level):
+def set_log_level(level):
     try:
         logger.setLevel(level)
     except Exception as e:
         logger.error(e, exc_info=True)
+
+
+def signal_handler(sig, _):
+    logging.info("Received interrupt signal: " + str(sig))
+    if len(samples_buffer) > 0:
+        send_samples_buffer()
+    sys.exit(0)
 
 
 def main():
@@ -272,13 +280,6 @@ def main():
             communication_utils.sendMessageOverConnection(connection, message_bytes)
 
 
-def signalHandler(sig, _):
-    logging.info("Received interrupt signal: " + str(sig))
-    if len(samples_buffer) > 0:
-        send_samples_buffer()
-    sys.exit(0)
-
-
 if __name__ == "__main__":
     logger = logging.getLogger(__name__)
 
@@ -297,7 +298,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         Postprocessor_Socket_Path = sys.argv[1]
     # Handle interrupt signals
-    signal.signal(signal.SIGINT, signalHandler)
+    signal.signal(signal.SIGINT, signal_handler)
 
     # Start program
     try:
