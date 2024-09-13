@@ -70,7 +70,7 @@ git pull --recurse-submodules
 
 ## Configuration of example postprocessor
 
-Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.noresponse.ini` and add some overrides for the configuration.
+Create a [configuration file](plugin.noresponse.ini.example) at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.noresponse.ini` and add some overrides for the configuration.
 
 This plugin only supports changing the debug level between DEBUG, INFO, WARNING, ERROR and CRITICAL
 

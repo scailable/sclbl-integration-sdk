@@ -53,7 +53,7 @@ Also set a region for AWS in `~/.aws/config`
 region=us-east-1
 ```
 
-You can configure other settings in the configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.cloud-inference.ini`:
+You can configure other settings in the [configuration file](plugin.cloud-inference.ini.example) at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.cloud-inference.ini`:
 
 ```ini
 [common]

@@ -29,7 +29,7 @@ git pull --recurse-submodules
 
 ## Configuration of example postprocessor
 
-Create a new config file `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.edgeimpulse.ini` and add your Edge Impulse API key as well as any overrides of the following settings.
+Create a new [configuration file](plugin.edgeimpulse.ini.example) at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.edgeimpulse.ini` and add your Edge Impulse API key as well as any overrides of the following settings.
 
 ```ini
 [common]

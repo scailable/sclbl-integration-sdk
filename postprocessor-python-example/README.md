@@ -72,7 +72,7 @@ git pull --recurse-submodules
 
 ## Configuration of example postprocessor
 
-Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.example.ini` and add some overrides for the configuration.
+Create a [configuration file](plugin.example.ini.example) at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.example.ini` and add some overrides for the configuration.
 
 This plugin only supports changing the debug level between DEBUG, INFO, WARNING, ERROR and CRITICAL
 
