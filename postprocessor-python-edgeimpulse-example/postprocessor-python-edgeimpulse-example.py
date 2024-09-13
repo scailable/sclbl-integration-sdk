@@ -3,6 +3,8 @@ import sys
 import socket
 import signal
 import logging
+import logging.handlers
+import configparser
 import io
 import time
 from pprint import pformat
@@ -10,24 +12,18 @@ import msgpack
 import struct
 from math import prod
 from datetime import datetime
-# noinspection PyUnresolvedReferences
 from PIL import Image
-# noinspection PyUnresolvedReferences
 import edgeimpulse
 
+CONFIG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
+               "nxai_plugin/nxai_manager/etc/plugin.edgeimpulse.ini")
 
-# Set up logging
 LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
-            "nxai_plugin/nxai_manager/etc/plugin.log")
+            "nxai_plugin/nxai_manager/etc/plugin.edgeimpulse.log")
 
-# Add your own project level Edge Impulse API key   
-edge_impulse_api_key = "ei_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-
-# Option autogenerate images every x seconds as an alternative to sending based on p_value
-auto_generator = False
-
-# If auto_generator True, every how many seconds upload an image?
-auto_generator_every_seconds = 1
+# Add your own project level Edge Impulse API key
+# Please use the CONFIG_FILE to set [edgeimpulse][api_key] to your edge impulse api key
+default_edge_impulse_api_key = "ei_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 # We keep a counter to generate unique filenames.
 samples_counter: int = 0
@@ -35,20 +31,28 @@ samples_counter: int = 0
 # The buffer with samples to batch.
 samples_buffer: list = []
 
-# Flush the buffer at this length
-samples_buffer_flush_size = 20
-
-# Send images below this value to EdgeImpulse. Can be between 0.0 and 1.0
-p_value = 0.4
-
 # Returning data to the AI Manager is not needed for this postprocessor.
 # See also "NoResponse": true value in external_postprocessors.json / README.md
 return_data = False
 
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - edge impulse - %(message)s',
                     filename=LOG_FILE, filemode="w")
-logging.debug("Initializing plugin")
+
+# Add the sclbl-utilities python utilities
+script_location = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(script_location, "../sclbl-utilities/python-utilities"))
+import communication_utils
+
+# The name of the postprocessor.
+# This is used to match the definition of the postprocessor with routing.
+Postprocessor_Name = "Python-EdgeImpulse-Postprocessor"
+
+# The socket this postprocessor will listen on.
+# This is always given as the first argument when the process is started
+# But it can be manually defined as well, as long as it is the same as the socket path in the runtime settings
+Postprocessor_Socket_Path = "/tmp/python-edgeimpulse-postprocessor.sock"
+
 
 def send_samples_buffer():
     # This function sends the buffered samples to an Edge Impulse instance for data processing.
@@ -96,24 +100,63 @@ def send_samples_buffer():
         logging.info("No samples to send to Edge Impulse. Total {t}".format(t=samples_counter))
 
 
-# Add the sclbl-utilities python utilities
-script_location = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.join(script_location, "../sclbl-utilities/python-utilities"))
-import communication_utils
+def config():
 
-# The name of the postprocessor.
-# This is used to match the definition of the postprocessor with routing.
-Postprocessor_Name = "Python-Example-Postprocessor"
+    global edge_impulse_api_key
+    global default_edge_impulse_api_key
+    global auto_generator
+    global auto_generator_every_seconds
+    global samples_buffer_flush_size
+    global p_value
 
-# The socket this postprocessor will listen on.
-# This is always given as the first argument when the process is started
-# But it can be manually defined as well, as long as it is the same as the socket path in the runtime settings
-Postprocessor_Socket_Path = "/tmp/python-example-postprocessor.sock"
+    logger.info('Reading configuration from:' + CONFIG_FILE)
+
+    try:
+        configuration = configparser.ConfigParser()
+        configuration.read(CONFIG_FILE)
+
+        configured_log_level = configuration.get('common', 'debug_level', fallback = 'INFO')
+        set_log_level(configured_log_level)
+
+        for section in configuration.sections():
+            logger.info('config section: ' + section)
+            for key in configuration[section]:
+                logger.info('config key: ' + key + ' = ' + configuration[section][key])
+
+        # Override default values from config
+        edge_impulse_api_key = configuration.get('edgeimpulse', 'api_key', fallback=default_edge_impulse_api_key)
+
+        logger.info('new edge_impulse_api_key: ' + edge_impulse_api_key)
+
+        auto_generator = configuration.get('edgeimpulse', 'auto_generator', fallback=False)
+        auto_generator_every_seconds = int(configuration.get('edgeimpulse', 'auto_generator_every_seconds', fallback=1))
+        samples_buffer_flush_size = int(configuration.get('edgeimpulse', 'samples_buffer_flush_size', fallback=20))
+        p_value = float(configuration.get('edgeimpulse', 'p_value', fallback=0.4))
+
+    except Exception as e:
+        logger.error(e, exc_info=True)
+
+    logger.debug('Read configuration done')
+
+
+def set_log_level(level):
+    try:
+        logger.setLevel(level)
+    except Exception as e:
+        logger.error(e, exc_info=True)
+
+
+def signal_handler(sig, _):
+    logging.info("Received interrupt signal: " + str(sig))
+    if len(samples_buffer) > 0:
+        send_samples_buffer()
+    sys.exit(0)
 
 
 def main():
 
     global samples_buffer
+    global samples_buffer_flush_size
     global samples_counter
     global p_value
     global auto_generator
@@ -132,7 +175,7 @@ def main():
 
     # Get the current time at the start
     start_time = time.time()
-    
+
     # Wait for messages in a loop
     counter = 0
     while True:
@@ -147,7 +190,7 @@ def main():
         except socket.timeout:
             # Request timed out. Continue waiting
             continue
-            
+
         counter = counter + 1
 
         logging.debug("Message " + str(counter) + "received")
@@ -184,8 +227,8 @@ def main():
         if auto_generator and current_time - start_time >= auto_generator_every_seconds:
 
             start_time = current_time
-            logging.info("Add timed sample (every )" + str(auto_generator_every_seconds)
-                         + "(seconds) number " + str(counter) + " to upload queue")
+            logging.info("Add timed sample every " + str(auto_generator_every_seconds)
+                         + " seconds number " + str(counter) + " to upload queue")
             upload_sample = True
 
         elif not auto_generator:
@@ -206,7 +249,7 @@ def main():
                     upload_sample = True
 
         if upload_sample:
-            logging.info("x")
+            logging.debug("uploading sample")
             # Parse image information
             image_header = msgpack.unpackb(image_header)
 
@@ -220,10 +263,10 @@ def main():
             if len(samples_buffer) >= samples_buffer_flush_size:
                 send_samples_buffer()
         else:
-            logging.info(".")
-        
+            logging.debug("skipping sample")
+
         if return_data:
-             # Create msgpack formatted message
+            # Create msgpack formatted message
             data_types = parsed_response.get("OutputDataTypes")
             for key in parsed_response['Outputs']:
                 value = parsed_response['Outputs'][key]
@@ -237,20 +280,26 @@ def main():
             communication_utils.sendMessageOverConnection(connection, message_bytes)
 
 
-def signalHandler(sig, _):
-    logging.debug("EXAMPLE PLUGIN: Received interrupt signal: " + str(sig))
-    if len(samples_buffer) > 0:
-        send_samples_buffer()
-    sys.exit(0)
-
-
 if __name__ == "__main__":
-    logging.debug("EXAMPLE PLUGIN: Input parameters: " + str(sys.argv))
+    logger = logging.getLogger(__name__)
+
+    config()
+
+    logger.info("Initializing example plugin")
+    logging.debug("Input parameters: " + str(sys.argv))
+
+    if (edge_impulse_api_key == default_edge_impulse_api_key):
+        logging.error('Edge Impulse Key is not set yet', exc_info=True)
+        exit()
+    else:
+        logging.debug('Edge Impulse Key: ' + edge_impulse_api_key)
+
     # Parse input arguments
     if len(sys.argv) > 1:
         Postprocessor_Socket_Path = sys.argv[1]
     # Handle interrupt signals
-    signal.signal(signal.SIGINT, signalHandler)
+    signal.signal(signal.SIGINT, signal_handler)
+
     # Start program
     try:
         main()

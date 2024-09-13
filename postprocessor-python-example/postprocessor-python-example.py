@@ -2,11 +2,25 @@ import os
 import sys
 import socket
 import signal
+import logging
+import logging.handlers
+import configparser
 
 # Add the sclbl-utilities python utilities
 script_location = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(script_location, "../sclbl-utilities/python-utilities"))
 import communication_utils
+
+CONFIG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
+               "nxai_plugin/nxai_manager/etc/plugin.example.ini")
+
+# Set up logging
+LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
+            "nxai_plugin/nxai_manager/etc/plugin.example.log")
+
+# Initialize plugin and logging, script makes use of INFO and DEBUG levels
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - example - %(message)s',
+                    filename=LOG_FILE, filemode="w")
 
 # The name of the postprocessor.
 # This is used to match the definition of the postprocessor with routing.
@@ -31,32 +45,68 @@ Postprocessor_Socket_Path = "/tmp/python-example-postprocessor.sock"
 # 12: //UINT32
 # 13: //UINT64
 
+def config():
+    logger.info('Reading configuration from:' + CONFIG_FILE)
+
+    try:
+        configuration = configparser.ConfigParser()
+        configuration.read(CONFIG_FILE)
+
+        configured_log_level = configuration.get('common', 'debug_level', fallback = 'INFO')
+        set_log_level(configured_log_level)
+
+        for section in configuration.sections():
+            logger.info('config section: ' + section)
+            for key in configuration[section]:
+                logger.info('config key: ' + key + ' = ' + configuration[section][key])
+
+    except Exception as e:
+        logger.error(e, exc_info=True)
+
+    logger.debug('Read configuration done')
+
+
+def set_log_level(level):
+    try:
+        logger.setLevel(level)
+    except Exception as e:
+        logger.error(e, exc_info=True)
+
+
+def signal_handler(sig, _):
+    logger.info("Received interrupt signal: " + str(sig))
+    sys.exit(0)
+
 
 def main():
     # Start socket listener to receive messages from NXAI runtime
     server = communication_utils.startUnixSocketServer(Postprocessor_Socket_Path)
+
     # Wait for messages in a loop
     while True:
         # Wait for input message from runtime
+        logger.debug("Waiting for input message")
+
         try:
             input_message, connection = communication_utils.waitForSocketMessage(server)
+            logger.debug("Received input message")
         except socket.timeout:
             # Request timed out. Continue waiting
             continue
 
-        print("EXAMPLE PLUGIN: Received input message: ", input_message)
-
         # Parse input message
         input_object = communication_utils.parseInferenceResults(input_message)
 
-        print("Unpacked ", input_object)
+        # Use pformat to format the deep object
+        # formatted_unpacked_object = pformat(input_object)
+        # logging.debug(f'Unpacked:\n\n{formatted_unpacked_object}\n\n')
 
         # Add extra bbox
         if "BBoxes_xyxy" not in input_object:
             input_object["BBoxes_xyxy"] = {}
         input_object["BBoxes_xyxy"]["test"] = [100.0, 100.0, 200.0, 200.0]
 
-        print("Packing ", input_object)
+        logger.info("Added test bounding box to output")
 
         # Write object back to string
         output_message = communication_utils.writeInferenceResults(input_object)
@@ -65,17 +115,23 @@ def main():
         communication_utils.sendMessageOverConnection(connection, output_message)
 
 
-def signalHandler(sig, _):
-    print("EXAMPLE PLUGIN: Received interrupt signal: ", sig)
-    sys.exit(0)
-
-
 if __name__ == "__main__":
-    print("EXAMPLE PLUGIN: Input parameters: ", sys.argv)
+    ## initialize the logger
+    logger = logging.getLogger(__name__)
+
+    ## read configuration file if it's available
+    config()
+
+    logger.info("Initializing example plugin")
+    logger.debug("Input parameters: " + str(sys.argv))
+
     # Parse input arguments
     if len(sys.argv) > 1:
         Postprocessor_Socket_Path = sys.argv[1]
     # Handle interrupt signals
-    signal.signal(signal.SIGINT, signalHandler)
+    signal.signal(signal.SIGINT, signal_handler)
     # Start program
-    main()
+    try:
+        main()
+    except Exception as e:
+        logger.error(e, exc_info=True)
