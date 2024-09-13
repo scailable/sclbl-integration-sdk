@@ -17,37 +17,171 @@ The incoming MessagePack message follows a specific schema. If the message is al
 
 ```json
 {
-    "Timestamp": <Timestamp>,
-    "Width": <Width>,
-    "Height": <Height>,
-    "InputIndex": <Index>,
-    "Counts": {
-        <"Class Name">: <Class Count>
-    },
-    "BBoxes_xyxy": {
-        <"Class Name">: [
-            <Coordinates>
-        ]
-    },
-    "Scores": {
-        <"Class Name"> : <Score>
-    }
+  "Timestamp": <Timestamp>,
+  "Width": <Width>,
+  "Height": <Height>,
+  "InputIndex": <Index>,
+  "Counts": {
+    <"Class Name">: <Class Count>
+  },
+  "BBoxes_xyxy": {
+    <"Class Name">: [
+      <Coordinates>
+    ]
+  },
+  "Scores": {
+    <"Class Name"> : <Score>
+  }
 }
 ```
 
+The image header message contains fields indicating information about the image dimensions and information to access this data:
+
+```json
+{
+    "Width": <Width>,
+    "Height": <Height>,
+    "SHMKey": <SHM Key>,
+    "SHMID": <SHM ID>
+}
+```
+
+A convenience example function is provided showing how to use this data to access the original tensor data in shared memory.
+
+# Requirements
+
+For this example to work, you can use any model.
+
 # How to use
 
-Once compiled, copy the executable to an accessible directory. A convenience directory within the Edge AI Manager installation is created for this purpose at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors`.
+## Download the integration SDK
 
-It's a good idea to make sure the application and settings file you add is readable and executable by the NXAI Edge AI Manager. This can be achieved by running:
+You probably have the integration SDK already if you're looking at this readme, the command to get the full integration SDK is as follows:
+
+```shell
+git clone https://github.com/scailable/sclbl-integration-sdk.git --recurse-submodules
+```
+
+If you have downloaded the sdk previously, you can also update to the latest version of the integration SDK while in the directory of the downloaded git repository.
+
+```shell
+git pull --recurse-submodules
+```
+
+## Configuration of example postprocessor
+
+Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.noresponse.ini` and add some overrides for the configuration.
+
+This plugin only supports changing the debug level between DEBUG, INFO, WARNING, ERROR and CRITICAL
+
+For example:
+
+```ini
+[common]
+debug_level=DEBUG
+```
+
+## Use the interval based upload
+
+When the `auto_generator` is set to `True` images will be uploaded according to the value in `auto_generator_every_seconds`
+
+## Use the confidence threshold based upload
+
+When the `auto_generator` is set to `False` images will be uploaded according to the value in `p_value`
+
+## Preparation of dependencies
+
+Install the needed dependencies
+
+```shell
+sudo apt install cmake
+sudo apt install g++
+sudo apt install python3-pip
+sudo apt install python3.12-venv
+```
+
+Change into the directory created for the project if you're not already there.
+
+```shell
+cd sclbl-integration-sdk/
+```
+
+Prepare the *build* directory in the project directory, and switch to the build directory.
+
+```shell
+mkdir -p build
+cd build
+```
+
+Set up a python virtual environment in the newly created build directory (on recent ubuntu servers this is required).
+
+```shell
+python3 -m venv integrationsdk
+source integrationsdk/bin/activate
+```
+
+## (optionally) Remove other postprocessors for compilation
+
+Edit the `CMakelist.txt` to disable all but the external postprocessor.
+
+```shell
+nano ../CMakeLists.txt
+```
+
+It should look similar to this
+
+```shell
+cmake_minimum_required(VERSION 3.10.2)
+
+project(sclbl-integration-examples)
+
+# Add Scailable C Utilities for all subprojects
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/sclbl-utilities)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/sclbl-utilities/include)
+
+# Add Edge Impulse Postprocessor Python project
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/postprocessor-python-edgeimpulse-example)
+
+# Add installation option
+install(TARGETS
+    DESTINATION /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/
+)
+install(PROGRAMS
+    ${CMAKE_CURRENT_BINARY_DIR}/postprocessor-python-edgeimpulse-example/postprocessor-python-edgeimpulse-example
+    DESTINATION /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/
+)
+```
+
+## Compile the postprocessor in python
+
+Build the postprocessor, while in the created *build* directory. This may take a while, depending on the speed of your system.
+
+```shell
+cmake ..
+make
+```
+
+## Install the postprocessor
+
+Once compiled, copy the executable to an accessible directory.
+
+A convenience directory within the Edge AI Manager installation is created for this purpose at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors`.
+
+The application and settings files you add must be readable and executable by the NX AI Edge AI Manager. This can be achieved by running:
 
 ```
 sudo chmod -R 777 /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors
 ```
 
+Install the postprocessor automatically with the cmake command, also from within the *build* directory.
+
+```shell
+cmake --build . --target install
+```
+
 ## Defining the postprocessor
 
-Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/external_postprocessors.json` and add the details of your postprocessor to the root object of that file. For example: 
+Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/external_postprocessors.json` and add the details of your postprocessor to the root object of that file. For example:
 
 ``` json
 {
@@ -84,13 +218,21 @@ sudo service networkoptix-metavms-mediaserver restart
 
 You also want to make sure the postprocessor can be used by the NX AI Manager (this is the mostly same command as earlier)
 
-```
+```shell
 sudo chmod -R a+x /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/
 ```
 
 ## Selecting to the postprocessor
 
 If the postprocessor is defined correctly, its name should appear in the list of postprocessors in the NX Plugin settings. If it is selected in the plugin settings then the Edge AI Runtime will send data to the postprocessor and wait for its output.
+
+## Output logging
+
+There is an output log where the uploads can be tracked in real time from the server.
+
+```shell
+tail -f /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.noresponse.log
+```
 
 # Licence
 

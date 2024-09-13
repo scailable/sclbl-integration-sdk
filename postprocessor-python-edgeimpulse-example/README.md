@@ -1,7 +1,15 @@
 Edge Impulse Image Uploader
 ===========================
 
-This example application uses a Python based postprocessor to upload images to Edge Impulse for training, either time based, or based on inference confidence.
+This example application uses a Python based postprocessor to upload images to Edge Impulse for training, either interval based with the auto uploader, or based on an inference confidence threshold.
+
+# Requirements
+
+For this example to work, you can use any model.
+
+You also need an Edge Impulse account at https://edgeimpulse.com/.
+
+Edge Impulse usage charges may apply, but it is possible to use the free tier to test this.
 
 # How to use
 
@@ -43,17 +51,17 @@ Before building this postprocessor you need to enter your API key for the Edge I
 
 Replace the key in `api_key` with your own key, you can get your key in Edge Impulse Studio from the "Dashboard > Keys" page. Don't use quotes around the key in the configuration file.
 
-## Use the time based upload
+## Use the interval based upload
 
 When the `auto_generator` is set to `True` images will be uploaded according to the value in `auto_generator_every_seconds`
 
-## Use the confidence based upload
+## Use the confidence threshold based upload
 
 When the `auto_generator` is set to `False` images will be uploaded according to the value in `p_value`
 
 ## Preparation of dependencies
 
-Install needed dependencies
+Install the needed dependencies
 
 ```shell
 sudo apt install cmake
@@ -68,14 +76,14 @@ Change into the directory created for the project if you're not already there.
 cd sclbl-integration-sdk/
 ```
 
-Prepare the *build* directory, while in the project directory.
+Prepare the *build* directory in the project directory, and switch to the build directory.
 
 ```shell
 mkdir -p build
 cd build
 ```
 
-Set up a python virtual environment (needed on recent ubuntu servers) in the newly created build directory
+Set up a python virtual environment in the newly created build directory (on recent ubuntu servers this is required).
 
 ```shell
 python3 -m venv integrationsdk
@@ -84,7 +92,7 @@ source integrationsdk/bin/activate
 
 ## (optionally) Remove other postprocessors for compilation
 
-Edit the `CMakelist.txt` to disable all but the external postprocessor
+Edit the `CMakelist.txt` to disable all but the external postprocessor.
 
 ```shell
 nano ../CMakeLists.txt
@@ -116,27 +124,34 @@ install(PROGRAMS
 
 ## Compile the postprocessor in python
 
-Build and install the postprocessor, while in the created *build* directory.
+Build the postprocessor, while in the created *build* directory. This may take a while, depending on the speed of your system.
 
 ```shell
 cmake ..
 make
-cmake --build . --target install
 ```
 
 ## Install the postprocessor
 
-Once compiled, copy the executable to an accessible directory. 
+Once compiled, copy the executable to an accessible directory.
 
 A convenience directory within the Edge AI Manager installation is created for this purpose at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors`.
 
-It's a good idea to make sure the application and settings file you add is readable and executable by the NX AI Edge AI Manager. This can be achieved by running:
+The application and settings files you add must be readable and executable by the NX AI Edge AI Manager. This can be achieved by running:
 
 ```
 sudo chmod -R 777 /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors
 ```
 
+Install the postprocessor automatically with the cmake command, also from within the *build* directory.
+
+```shell
+cmake --build . --target install
+```
+
 ## Defining the postprocessor
+
+To make the postprocessor available in the NX Server another configuration must be added.
 
 Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/external_postprocessors.json` and add the details of your postprocessor to the root object of that file. For example:
 
@@ -156,6 +171,7 @@ Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugin
 ```
 
 This tells the Edge AI Manager about the postprocessor:
+
 - **Name** gives the postprocesor a name so it can be selected later
 - **Command** defines how to start the postprocessor
 - **SocketPath** tells the AI Manager where to send data to so the external postprocessor will receive it
@@ -175,7 +191,7 @@ sudo service networkoptix-metavms-mediaserver restart
 
 You also want to make sure the postprocessor can be used by the NX AI Manager (this is the mostly same command as earlier)
 
-```
+```shell
 sudo chmod -R a+x /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/
 ```
 
@@ -188,7 +204,7 @@ If the postprocessor is defined correctly, its name should appear in the list of
 There is an output log where the uploads can be tracked in real time from the server.
 
 ```shell
-tail -f /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.log
+tail -f /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.edgeimpulse.log
 ```
 
 # Licence
