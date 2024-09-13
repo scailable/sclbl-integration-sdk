@@ -2,7 +2,7 @@
 debug_level=INFO
 [edgeimpulse]
 # Add your own project level Edge Impulse API key
-api_key = ei_26908c29e9c373b4acc357962a8c0223236274e31d285733f6ec04843ae5ffe4
+api_key = ei_your_key_here
 # Option autogenerate images every x seconds as an alternative to sending based on p_value
 auto_generator = True
 # If auto_generator True, every how many seconds upload an image?
