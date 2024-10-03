@@ -7,21 +7,29 @@ import logging.handlers
 import configparser
 from pprint import pformat
 
-# Add the sclbl-utilities python utilities
+# Add the nxai-utilities python utilities
 script_location = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.join(script_location, "../sclbl-utilities/python-utilities"))
+sys.path.append(os.path.join(script_location, "../nxai-utilities/python-utilities"))
 import communication_utils
 
-CONFIG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
-               "nxai_plugin/nxai_manager/etc/plugin.noresponse.ini")
+CONFIG_FILE = (
+    "/opt/networkoptix-metavms/mediaserver/bin/plugins/"
+    "nxai_plugin/nxai_manager/etc/plugin.noresponse.ini"
+)
 
-LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
-            "nxai_plugin/nxai_manager/etc/plugin.noresponse.log")
+LOG_FILE = (
+    "/opt/networkoptix-metavms/mediaserver/bin/plugins/"
+    "nxai_plugin/nxai_manager/etc/plugin.noresponse.log"
+)
 
 
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - noresponse - %(message)s',
-                    filename=LOG_FILE, filemode="w")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - noresponse - %(message)s",
+    filename=LOG_FILE,
+    filemode="w",
+)
 
 # The name of the postprocessor.
 # This is used to match the definition of the postprocessor with routing.
@@ -46,25 +54,28 @@ Postprocessor_Socket_Path = "/tmp/python-noresponse-postprocessor.sock"
 # 12: //UINT32
 # 13: //UINT64
 
+
 def config():
-    logger.info('Reading configuration from:' + CONFIG_FILE)
+    logger.info("Reading configuration from:" + CONFIG_FILE)
 
     try:
         configuration = configparser.ConfigParser()
         configuration.read(CONFIG_FILE)
 
-        configured_log_level = configuration.get('common', 'debug_level', fallback = 'INFO')
+        configured_log_level = configuration.get(
+            "common", "debug_level", fallback="INFO"
+        )
         set_log_level(configured_log_level)
 
         for section in configuration.sections():
-            logger.info('config section: ' + section)
+            logger.info("config section: " + section)
             for key in configuration[section]:
-                logger.info('config key: ' + key + ' = ' + configuration[section][key])
+                logger.info("config key: " + key + " = " + configuration[section][key])
 
     except Exception as e:
         logger.error(e, exc_info=True)
 
-    logger.debug('Read configuration done')
+    logger.debug("Read configuration done")
 
 
 def set_log_level(level):
@@ -93,7 +104,7 @@ def main():
             input_message, _ = communication_utils.waitForSocketMessage(server)
             logging.debug("Received input message")
             formatted_input_message = pformat(input_message)
-            logger.debug(f'Input message: :\n\n{formatted_input_message}\n\n')
+            logger.debug(f"Input message: :\n\n{formatted_input_message}\n\n")
         except socket.timeout:
             # Request timed out. Continue waiting
             continue
@@ -102,7 +113,7 @@ def main():
         input_object = communication_utils.parseInferenceResults(input_message)
 
         formatted_unpacked_object = pformat(input_object)
-        logging.info(f'Unpacked object:\n\n{formatted_unpacked_object}\n\n')
+        logging.info(f"Unpacked object:\n\n{formatted_unpacked_object}\n\n")
 
 
 if __name__ == "__main__":

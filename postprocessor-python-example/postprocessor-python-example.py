@@ -6,9 +6,9 @@ import logging
 import logging.handlers
 import configparser
 
-# Add the sclbl-utilities python utilities
+# Add the nxai-utilities python utilities
 script_location = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.join(script_location, "../sclbl-utilities/python-utilities"))
+sys.path.append(os.path.join(script_location, "../nxai-utilities/python-utilities"))
 import communication_utils
 
 CONFIG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"

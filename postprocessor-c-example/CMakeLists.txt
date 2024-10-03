@@ -1,7 +1,7 @@
 
 cmake_minimum_required(VERSION 3.10.2)
 
-project(sclbl-c-postprocessor-example)
+project(nxai-c-postprocessor-example)
 
 # Generate compile commands
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -36,4 +36,4 @@ target_link_options(postprocessor-c-example PUBLIC -Wl,--gc-sections -Wl,--as-ne
 target_link_libraries(postprocessor-c-example m dl rt)
 
 # Link utilities libraries
-target_link_libraries(postprocessor-c-example sclbl-c-utilities)
+target_link_libraries(postprocessor-c-example nxai-c-utilities)

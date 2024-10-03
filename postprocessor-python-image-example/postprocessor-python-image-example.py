@@ -16,19 +16,27 @@ from datetime import datetime
 from PIL import Image
 import msgpack
 
-# Add the sclbl-utilities python utilities
+# Add the nxai-utilities python utilities
 script_location = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(script_location, "../sclbl-utilities/python-utilities"))
 
-CONFIG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
-               "nxai_plugin/nxai_manager/etc/plugin.image.ini")
+CONFIG_FILE = (
+    "/opt/networkoptix-metavms/mediaserver/bin/plugins/"
+    "nxai_plugin/nxai_manager/etc/plugin.image.ini"
+)
 
-LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
-            "nxai_plugin/nxai_manager/etc/plugin.image.log")
+LOG_FILE = (
+    "/opt/networkoptix-metavms/mediaserver/bin/plugins/"
+    "nxai_plugin/nxai_manager/etc/plugin.image.log"
+)
 
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - image - %(message)s',
-                    filename=LOG_FILE, filemode="w")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - image - %(message)s",
+    filename=LOG_FILE,
+    filemode="w",
+)
 
 import communication_utils
 
@@ -53,24 +61,26 @@ def parse_image_from_shm(shm_key: int, width: int, height: int, channels: int):
 
 
 def config():
-    logger.info('Reading configuration from:' + CONFIG_FILE)
+    logger.info("Reading configuration from:" + CONFIG_FILE)
 
     try:
         configuration = configparser.ConfigParser()
         configuration.read(CONFIG_FILE)
 
-        configured_log_level = configuration.get('common', 'debug_level', fallback = 'INFO')
+        configured_log_level = configuration.get(
+            "common", "debug_level", fallback="INFO"
+        )
         set_log_level(configured_log_level)
 
         for section in configuration.sections():
-            logger.info('config section: ' + section)
+            logger.info("config section: " + section)
             for key in configuration[section]:
-                logger.info('config key: ' + key + ' = ' + configuration[section][key])
+                logger.info("config key: " + key + " = " + configuration[section][key])
 
     except Exception as e:
         logger.error(e, exc_info=True)
 
-    logger.debug('Read configuration done')
+    logger.debug("Read configuration done")
 
 
 def set_log_level(level):
@@ -97,7 +107,7 @@ def main():
             input_message, connection = communication_utils.waitForSocketMessage(server)
             logger.debug("Received input message")
             formatted_input_message = pformat(input_message)
-            logger.debug(f'Input message: :\n\n{formatted_input_message}\n\n')
+            logger.debug(f"Input message: :\n\n{formatted_input_message}\n\n")
 
         except socket.timeout:
             # Request timed out. Continue waiting
@@ -114,11 +124,11 @@ def main():
         # Parse input message
         input_object = communication_utils.parseInferenceResults(input_message)
         formatted_unpacked_object = pformat(input_object)
-        logger.info(f'Unpacked input image:\n\n{formatted_unpacked_object}\n\n')
+        logger.info(f"Unpacked input image:\n\n{formatted_unpacked_object}\n\n")
 
         image_header = msgpack.unpackb(image_header)
         formatted_image_object = pformat(image_header)
-        logger.debug(f'Image header:\n\n{formatted_image_object}\n\n')
+        logger.debug(f"Image header:\n\n{formatted_image_object}\n\n")
 
         cumulative = parse_image_from_shm(
             image_header["SHMKey"],
@@ -146,7 +156,7 @@ def main():
         input_object["Counts"]["ImageBytesCumulative"] = cumulative
 
         formatted_packed_object = pformat(input_object)
-        logger.info(f'Returning packed object:\n\n{formatted_packed_object}\n\n')
+        logger.info(f"Returning packed object:\n\n{formatted_packed_object}\n\n")
 
         # Write object back to string
         output_message = communication_utils.writeInferenceResults(input_object)

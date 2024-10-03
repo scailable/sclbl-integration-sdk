@@ -6,12 +6,12 @@
 
 // Local includes
 #include "mpack.h"
-#include "sclbl_socket_utils.h"
+#include "nxai_socket_utils.h"
 
 // Deps includes
 #include "nxai_data_structures.h"
 #include "nxai_data_utils.h"
-#include "sclbl_shm_utils.h"
+#include "nxai_shm_utils.h"
 
 #define STRLEN( s ) ( sizeof( s ) / sizeof( s[0] ) )
 
@@ -54,12 +54,12 @@ int main( int argc, char *argv[] ) {
     uint32_t message_length;
 
     // Create a listener socket
-    int socket_fd = sclbl_socket_create_listener( socket_path );
+    int socket_fd = nxai_socket_create_listener( socket_path );
 
     // Main loop: continues until an interrupt signal is received
     while ( interrupt_flag == false ) {
         // Wait for a message on the socket
-        int connection_fd = sclbl_socket_await_message( socket_fd, &allocated_buffer_size, &input_buffer, &message_length );
+        int connection_fd = nxai_socket_await_message( socket_fd, &allocated_buffer_size, &input_buffer, &message_length );
 
         // If connection times out, it continues to wait for the message again
         if ( connection_fd == -1 ) {
@@ -69,7 +69,7 @@ int main( int argc, char *argv[] ) {
         // Since we're expecting input tensor, read data header
         char *image_header = NULL;
         uint32_t header_length = 0;
-        sclbl_socket_receive_on_connection( connection_fd, &allocated_buffer_size, &image_header, &header_length );
+        nxai_socket_receive_on_connection( connection_fd, &allocated_buffer_size, &image_header, &header_length );
         printf( "EXAMPLE PLUGIN: Received header %s\n", input_buffer );
 
         // Process the Mpack document
@@ -77,7 +77,7 @@ int main( int argc, char *argv[] ) {
         char *output_message = processMpackDocument( input_buffer, message_length, &output_length, image_header, header_length );
 
         // Send the processed output back to the socket
-        sclbl_socket_send_to_connection( connection_fd, output_message, output_length );
+        nxai_socket_send_to_connection( connection_fd, output_message, output_length );
 
         // Free buffer
         free( output_message );
@@ -176,7 +176,7 @@ char *processMpackDocument( const char *input_buffer, size_t input_buffer_length
             float *coordinates = (float *) malloc( bin_size );
             memcpy( coordinates, bin_data, bin_size );
             char *bbox_class = mpack_node_cstr_alloc( mpack_node_map_key_at( bboxs_node, bboxs_index ), 1024 );
-            bboxs[bboxs_index] = ( bbox_object_t ){ .class_name = bbox_class, .coordinates = coordinates, .format = "xyxy", .length = bin_size / sizeof( float ) };
+            bboxs[bboxs_index] = ( bbox_object_t ){ .class_name = bbox_class, .coordinates = coordinates, .format = "xyxy", .coords_length = bin_size / sizeof( float ) };
         }
     }
 
@@ -242,7 +242,7 @@ uint64_t processInputTensor( const char *input_buffer, size_t message_length ) {
 
     size_t tensor_size;
     char *tensor_data;
-    void *shared_data = sclbl_shm_read( shm_id, &tensor_size, &tensor_data );
+    void *shared_data = nxai_shm_read( shm_id, &tensor_size, &tensor_data );
 
     uint32_t height = mpack_node_u32( mpack_node_map_cstr( tensor_header_root, "Height" ) );
     uint32_t width = mpack_node_u32( mpack_node_map_cstr( tensor_header_root, "Width" ) );
@@ -257,7 +257,7 @@ uint64_t processInputTensor( const char *input_buffer, size_t message_length ) {
         cumulative_count += (unsigned char) tensor_data[index];
     }
 
-    sclbl_shm_close( shared_data );
+    nxai_shm_close( shared_data );
 
     return cumulative_count;
 }

@@ -15,11 +15,15 @@ from datetime import datetime
 from PIL import Image
 import edgeimpulse
 
-CONFIG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
-               "nxai_plugin/nxai_manager/etc/plugin.edgeimpulse.ini")
+CONFIG_FILE = (
+    "/opt/networkoptix-metavms/mediaserver/bin/plugins/"
+    "nxai_plugin/nxai_manager/etc/plugin.edgeimpulse.ini"
+)
 
-LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
-            "nxai_plugin/nxai_manager/etc/plugin.edgeimpulse.log")
+LOG_FILE = (
+    "/opt/networkoptix-metavms/mediaserver/bin/plugins/"
+    "nxai_plugin/nxai_manager/etc/plugin.edgeimpulse.log"
+)
 
 # Add your own project level Edge Impulse API key
 # Please use the CONFIG_FILE to set [edgeimpulse][api_key] to your edge impulse api key
@@ -36,12 +40,16 @@ samples_buffer: list = []
 return_data = False
 
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - edge impulse - %(message)s',
-                    filename=LOG_FILE, filemode="w")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - edge impulse - %(message)s",
+    filename=LOG_FILE,
+    filemode="w",
+)
 
-# Add the sclbl-utilities python utilities
+# Add the nxai-utilities python utilities
 script_location = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.join(script_location, "../sclbl-utilities/python-utilities"))
+sys.path.append(os.path.join(script_location, "../nxai-utilities/python-utilities"))
 import communication_utils
 
 # The name of the postprocessor.
@@ -64,20 +72,24 @@ def send_samples_buffer():
     # At the end, it empties the sample buffer.
     global samples_buffer, samples_counter
     if len(samples_buffer) > 0:
-        logging.info("Sending {c} samples to Edge Impulse...".format(c=len(samples_buffer)))
+        logging.info(
+            "Sending {c} samples to Edge Impulse...".format(c=len(samples_buffer))
+        )
         start_at = time.perf_counter()
         samples = []
         for contents in samples_buffer:
             samples_counter += 1
             logging.info("Create sample" + str(samples_counter))
-            filename = "{dt}C{c}.jpg".format(dt=datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), c=samples_counter)
+            filename = "{dt}C{c}.jpg".format(
+                dt=datetime.now().strftime("%Y-%m-%dT%H:%M:%S"), c=samples_counter
+            )
             output = io.BytesIO(contents)
             sample = edgeimpulse.experimental.data.Sample(
                 filename=filename,
                 data=output,
                 metadata={
-                    "date": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                }
+                    "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                },
             )
             samples.append(sample)
 
@@ -90,14 +102,22 @@ def send_samples_buffer():
             logging.info("Could not upload files")
 
         end_at = time.perf_counter()
-        logging.info("Send {c} samples in {d:0.1f}sec to Edge Impulse. Total {t}".format(
-            c=len(samples_buffer), d=end_at-start_at, t=samples_counter,
-        ))
-        logging.info("Send a total of {t} samples to Edge Impulse".format(t=samples_counter))
+        logging.info(
+            "Send {c} samples in {d:0.1f}sec to Edge Impulse. Total {t}".format(
+                c=len(samples_buffer),
+                d=end_at - start_at,
+                t=samples_counter,
+            )
+        )
+        logging.info(
+            "Send a total of {t} samples to Edge Impulse".format(t=samples_counter)
+        )
 
         samples_buffer = []
     else:
-        logging.info("No samples to send to Edge Impulse. Total {t}".format(t=samples_counter))
+        logging.info(
+            "No samples to send to Edge Impulse. Total {t}".format(t=samples_counter)
+        )
 
 
 def config():
@@ -109,34 +129,44 @@ def config():
     global samples_buffer_flush_size
     global p_value
 
-    logger.info('Reading configuration from:' + CONFIG_FILE)
+    logger.info("Reading configuration from:" + CONFIG_FILE)
 
     try:
         configuration = configparser.ConfigParser()
         configuration.read(CONFIG_FILE)
 
-        configured_log_level = configuration.get('common', 'debug_level', fallback = 'INFO')
+        configured_log_level = configuration.get(
+            "common", "debug_level", fallback="INFO"
+        )
         set_log_level(configured_log_level)
 
         for section in configuration.sections():
-            logger.info('config section: ' + section)
+            logger.info("config section: " + section)
             for key in configuration[section]:
-                logger.info('config key: ' + key + ' = ' + configuration[section][key])
+                logger.info("config key: " + key + " = " + configuration[section][key])
 
         # Override default values from config
-        edge_impulse_api_key = configuration.get('edgeimpulse', 'api_key', fallback=default_edge_impulse_api_key)
+        edge_impulse_api_key = configuration.get(
+            "edgeimpulse", "api_key", fallback=default_edge_impulse_api_key
+        )
 
-        logger.info('new edge_impulse_api_key: ' + edge_impulse_api_key)
+        logger.info("new edge_impulse_api_key: " + edge_impulse_api_key)
 
-        auto_generator = configuration.get('edgeimpulse', 'auto_generator', fallback=False)
-        auto_generator_every_seconds = int(configuration.get('edgeimpulse', 'auto_generator_every_seconds', fallback=1))
-        samples_buffer_flush_size = int(configuration.get('edgeimpulse', 'samples_buffer_flush_size', fallback=20))
-        p_value = float(configuration.get('edgeimpulse', 'p_value', fallback=0.4))
+        auto_generator = configuration.get(
+            "edgeimpulse", "auto_generator", fallback=False
+        )
+        auto_generator_every_seconds = int(
+            configuration.get("edgeimpulse", "auto_generator_every_seconds", fallback=1)
+        )
+        samples_buffer_flush_size = int(
+            configuration.get("edgeimpulse", "samples_buffer_flush_size", fallback=20)
+        )
+        p_value = float(configuration.get("edgeimpulse", "p_value", fallback=0.4))
 
     except Exception as e:
         logger.error(e, exc_info=True)
 
-    logger.debug('Read configuration done')
+    logger.debug("Read configuration done")
 
 
 def set_log_level(level):
@@ -199,7 +229,9 @@ def main():
         parsed_response = msgpack.unpackb(input_message)
 
         # Read Output types, shapes and sizes
-        output_data_types = parsed_response.get("OutputDataTypes")  # 1 for float32 and 3 for int8
+        output_data_types = parsed_response.get(
+            "OutputDataTypes"
+        )  # 1 for float32 and 3 for int8
         output_shapes = parsed_response.get("OutputShapes")
         output_sizes = [prod(output_shapes[i]) for i in range(len(output_shapes))]
 
@@ -219,7 +251,7 @@ def main():
             logging.debug("Message " + str(counter) + " parsed")
             # Use pformat to format the deep object
             formatted_object = pformat(parsed_response)
-            logging.debug(f'Parsed response:\n\n{formatted_object}\n\n')
+            logging.debug(f"Parsed response:\n\n{formatted_object}\n\n")
 
         current_time = time.time()
 
@@ -227,20 +259,28 @@ def main():
         if auto_generator and current_time - start_time >= auto_generator_every_seconds:
 
             start_time = current_time
-            logging.info("Add timed sample every " + str(auto_generator_every_seconds)
-                         + " seconds number " + str(counter) + " to upload queue")
+            logging.info(
+                "Add timed sample every "
+                + str(auto_generator_every_seconds)
+                + " seconds number "
+                + str(counter)
+                + " to upload queue"
+            )
             upload_sample = True
 
         elif not auto_generator:
 
             # Retrieve the bounding box values
-            bbox_values = list(parsed_response['Outputs'].values())[0]
+            bbox_values = list(parsed_response["Outputs"].values())[0]
 
             # Number of elements in each bounding box entry (assuming format: x1, y1, x2, y2, score, class)
             num_elements_per_entry = 6
 
             # Extract every 5th out of six values
-            parsed_values = [bbox_values[i] for i in range(4, len(bbox_values), num_elements_per_entry)]
+            parsed_values = [
+                bbox_values[i]
+                for i in range(4, len(bbox_values), num_elements_per_entry)
+            ]
 
             # Check if any of the values are below p_value and earmark result for retrieval
             for value in parsed_values:
@@ -255,7 +295,9 @@ def main():
 
             # Read image
             image_data = communication_utils.read_shm(image_header["SHMKey"])
-            with Image.frombytes("RGB", (image_header["Width"], image_header["Height"]), image_data) as image:
+            with Image.frombytes(
+                "RGB", (image_header["Width"], image_header["Height"]), image_data
+            ) as image:
                 with io.BytesIO() as output:
                     image.save(output, format="JPEG")
                     output.seek(0)
@@ -268,12 +310,16 @@ def main():
         if return_data:
             # Create msgpack formatted message
             data_types = parsed_response.get("OutputDataTypes")
-            for key in parsed_response['Outputs']:
-                value = parsed_response['Outputs'][key]
+            for key in parsed_response["Outputs"]:
+                value = parsed_response["Outputs"][key]
                 if data_types[0] == 1:
-                    parsed_response['Outputs'][key] = struct.pack("f" * len(value), *value)
+                    parsed_response["Outputs"][key] = struct.pack(
+                        "f" * len(value), *value
+                    )
                 elif data_types[0] == 3:
-                    parsed_response['Outputs'][key] = struct.pack("b" * len(value), *value)
+                    parsed_response["Outputs"][key] = struct.pack(
+                        "b" * len(value), *value
+                    )
             message_bytes = msgpack.packb(parsed_response)
 
             # Send message back to runtime
@@ -288,11 +334,11 @@ if __name__ == "__main__":
     logger.info("Initializing example plugin")
     logging.debug("Input parameters: " + str(sys.argv))
 
-    if (edge_impulse_api_key == default_edge_impulse_api_key):
-        logging.error('Edge Impulse Key is not set yet', exc_info=True)
+    if edge_impulse_api_key == default_edge_impulse_api_key:
+        logging.error("Edge Impulse Key is not set yet", exc_info=True)
         exit()
     else:
-        logging.debug('Edge Impulse Key: ' + edge_impulse_api_key)
+        logging.debug("Edge Impulse Key: " + edge_impulse_api_key)
 
     # Parse input arguments
     if len(sys.argv) > 1:

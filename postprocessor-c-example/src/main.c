@@ -7,7 +7,7 @@
 
 // Local includes
 #include "mpack.h"
-#include "sclbl_socket_utils.h"
+#include "nxai_socket_utils.h"
 
 // Deps includes
 #include "nxai_data_structures.h"
@@ -52,12 +52,12 @@ int main( int argc, char *argv[] ) {
     uint32_t message_length;
 
     // Create a listener socket
-    int socket_fd = sclbl_socket_create_listener( socket_path );
+    int socket_fd = nxai_socket_create_listener( socket_path );
 
     // Main loop: continues until an interrupt signal is received
     while ( interrupt_flag == false ) {
         // Wait for a message on the socket
-        int connection_fd = sclbl_socket_await_message( socket_fd, &allocated_buffer_size, &input_buffer, &message_length );
+        int connection_fd = nxai_socket_await_message( socket_fd, &allocated_buffer_size, &input_buffer, &message_length );
 
         // If connection times out, it continues to wait for the message again
         if ( connection_fd == -1 ) {
@@ -69,7 +69,7 @@ int main( int argc, char *argv[] ) {
         char *output_message = processMpackDocument( input_buffer, message_length, &output_length );
 
         // Send the processed output back to the socket
-        sclbl_socket_send_to_connection( connection_fd, output_message, output_length );
+        nxai_socket_send_to_connection( connection_fd, output_message, output_length );
 
         // Free buffer
         free( output_message );
@@ -168,7 +168,7 @@ char *processMpackDocument( const char *input_buffer, size_t input_buffer_length
             float *coordinates = (float *) malloc( bin_size );
             memcpy( coordinates, bin_data, bin_size );
             char *bbox_class = mpack_node_cstr_alloc( mpack_node_map_key_at( bboxs_node, bboxs_index ), 1024 );
-            bboxs[bboxs_index] = ( bbox_object_t ){ .class_name = bbox_class, .coordinates = coordinates, .format = "xyxy", .length = bin_size / sizeof( float ) };
+            bboxs[bboxs_index] = ( bbox_object_t ){ .class_name = bbox_class, .coordinates = coordinates, .format = "xyxy", .coords_length = bin_size / sizeof( float ) };
         }
     }
 
@@ -189,7 +189,7 @@ char *processMpackDocument( const char *input_buffer, size_t input_buffer_length
     coordinates[1] = 100.0;
     coordinates[2] = 200.0;
     coordinates[3] = 200.0;
-    bboxs[num_bboxs - 1] = ( bbox_object_t ){ .class_name = strdup( "test" ), .format = "xyxy", .length = 4, .coordinates = coordinates };
+    bboxs[num_bboxs - 1] = ( bbox_object_t ){ .class_name = strdup( "test" ), .format = "xyxy", .coords_length = 4, .coordinates = coordinates };
 
     ////////////////////////////////////////////////////
     //// Write output data

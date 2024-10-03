@@ -172,7 +172,22 @@ If the postprocessor is defined correctly, its name should appear in the list of
 ```
 .
 ├── CMakeLists.txt
-├── README.md
+├── nxai-utilities
+│   ├── CMakeLists.txt
+│   ├── include
+│   │   ├── musl_time.h
+│   │   ├── nxai_data_structures.h
+│   │   ├── nxai_process_utils.h
+│   │   ├── nxai_shm_utils.h
+│   │   └── nxai_socket_utils.h
+│   ├── python-utilities
+│   │   ├── communication_utils.py
+│   │   └── requirements.txt
+│   ├── README.md
+│   └── src
+│       ├── nxai_process_utils.c
+│       ├── nxai_shm_utils.c
+│       └── nxai_socket_utils.c
 ├── postprocessor-c-example
 │   ├── CMakeLists.txt
 │   ├── README.md

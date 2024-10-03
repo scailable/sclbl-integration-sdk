@@ -12,21 +12,29 @@ import struct
 import numpy as np
 from aws_utils import classify_faces, create_session
 
-# Add the sclbl-utilities python utilities
+# Add the nxai-utilities python utilities
 script_location = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.join(script_location, "../sclbl-utilities/python-utilities"))
+sys.path.append(os.path.join(script_location, "../nxai-utilities/python-utilities"))
 import communication_utils
 
-CONFIG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
-               "nxai_plugin/nxai_manager/etc/plugin.cloud-inference.ini")
+CONFIG_FILE = (
+    "/opt/networkoptix-metavms/mediaserver/bin/plugins/"
+    "nxai_plugin/nxai_manager/etc/plugin.cloud-inference.ini"
+)
 
 # Set up logging
-LOG_FILE = ("/opt/networkoptix-metavms/mediaserver/bin/plugins/"
-            "nxai_plugin/nxai_manager/etc/plugin.cloud-inference.log")
+LOG_FILE = (
+    "/opt/networkoptix-metavms/mediaserver/bin/plugins/"
+    "nxai_plugin/nxai_manager/etc/plugin.cloud-inference.log"
+)
 
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - cloud inference - %(message)s',
-                    filename=LOG_FILE, filemode="w")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - cloud inference - %(message)s",
+    filename=LOG_FILE,
+    filemode="w",
+)
 
 # The name of the postprocessor.
 # This is used to match the definition of the postprocessor with routing.
@@ -43,7 +51,9 @@ def parse_image_from_shm(shm_key: int, width: int, height: int, channels: int):
         image_data = communication_utils.read_shm(shm_key)
         image_size = width * height * channels
         image_array = list(struct.unpack("B" * image_size, image_data))
-        image_array = np.array(image_array).reshape((height, width, channels)).astype('uint8')
+        image_array = (
+            np.array(image_array).reshape((height, width, channels)).astype("uint8")
+        )
     except Exception as e:
         logger.debug("Failed to parse image from shared memory: ", e)
         return None
@@ -58,29 +68,39 @@ def config():
     global region_name
     global image_path
 
-    logger.info('Reading configuration from:' + CONFIG_FILE)
+    logger.info("Reading configuration from:" + CONFIG_FILE)
 
     try:
         configuration = configparser.ConfigParser()
         configuration.read(CONFIG_FILE)
 
-        configured_log_level = configuration.get('common', 'debug_level', fallback = 'INFO')
+        configured_log_level = configuration.get(
+            "common", "debug_level", fallback="INFO"
+        )
         set_log_level(configured_log_level)
 
         for section in configuration.sections():
-            logger.info('config section: ' + section)
+            logger.info("config section: " + section)
             for key in configuration[section]:
-                logger.info('config key: ' + key + ' = ' + configuration[section][key])
+                logger.info("config key: " + key + " = " + configuration[section][key])
 
-        aws_access_key_id = configuration.get('cloud', 'aws_access_key_id', fallback=False)
-        aws_secret_access_key = configuration.get('cloud', 'aws_secret_access_key', fallback=False)
-        region_name = configuration.get('cloud', 'region_name', fallback=False)
-        image_path = configuration.get('inference', 'image_path', fallback='/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/face.png')
+        aws_access_key_id = configuration.get(
+            "cloud", "aws_access_key_id", fallback=False
+        )
+        aws_secret_access_key = configuration.get(
+            "cloud", "aws_secret_access_key", fallback=False
+        )
+        region_name = configuration.get("cloud", "region_name", fallback=False)
+        image_path = configuration.get(
+            "inference",
+            "image_path",
+            fallback="/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/face.png",
+        )
 
     except Exception as e:
         logger.error(e, exc_info=True)
 
-    logger.debug('Read configuration done')
+    logger.debug("Read configuration done")
 
 
 def set_log_level(level):
@@ -138,7 +158,7 @@ def main():
 
         image = Image.fromarray(image_array)
 
-        faces = np.array(input_object['BBoxes_xyxy']['face']).reshape(-1, 4)
+        faces = np.array(input_object["BBoxes_xyxy"]["face"]).reshape(-1, 4)
 
         faces_to_delete = []
         for i, face in enumerate(faces):
@@ -147,19 +167,19 @@ def main():
             cropped_image = image.crop((x1, y1, x2, y2))
             cropped_image.save(path)
 
-            logger.info('Classifying image ' + path)
+            logger.info("Classifying image " + path)
 
             description = classify_faces(path, logger)
 
             if description is None:
-                logger.info('No description for this face.')
+                logger.info("No description for this face.")
                 continue
 
             # Add the description to the object
             if description not in input_object:
-                input_object['BBoxes_xyxy'][description] = face.tolist()
+                input_object["BBoxes_xyxy"][description] = face.tolist()
             else:
-                input_object['BBoxes_xyxy'][description].extend(face.tolist())
+                input_object["BBoxes_xyxy"][description].extend(face.tolist())
 
             faces_to_delete.append(i)
 
@@ -169,10 +189,10 @@ def main():
 
         # Delete the faces that have been classified
         faces = np.delete(faces, faces_to_delete, axis=0)
-        input_object['BBoxes_xyxy']['face'] = faces.flatten().tolist()
+        input_object["BBoxes_xyxy"]["face"] = faces.flatten().tolist()
 
         formatted_packed_object = pformat(input_object)
-        logger.debug(f'Returning packed object:\n\n{formatted_packed_object}\n\n')
+        logger.debug(f"Returning packed object:\n\n{formatted_packed_object}\n\n")
 
         # Write object back to string
         output_message = communication_utils.writeInferenceResults(input_object)
@@ -199,9 +219,9 @@ if __name__ == "__main__":
         logger.error(e, exc_info=True)
 
     if rekognition_client:
-        logging.debug('AWS Session started')
+        logging.debug("AWS Session started")
     else:
-        logging.error('AWS session failed')
+        logging.error("AWS session failed")
         exit()
 
     # Parse input arguments
