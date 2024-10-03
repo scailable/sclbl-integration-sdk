@@ -176,7 +176,7 @@ char *processMpackDocument( const char *input_buffer, size_t input_buffer_length
             float *coordinates = (float *) malloc( bin_size );
             memcpy( coordinates, bin_data, bin_size );
             char *bbox_class = mpack_node_cstr_alloc( mpack_node_map_key_at( bboxs_node, bboxs_index ), 1024 );
-            bboxs[bboxs_index] = ( bbox_object_t ){ .class_name = bbox_class, .coordinates = coordinates, .format = "xyxy", .length = bin_size / sizeof( float ) };
+            bboxs[bboxs_index] = ( bbox_object_t ){ .class_name = bbox_class, .coordinates = coordinates, .format = "xyxy", .coords_length = bin_size / sizeof( float ) };
         }
     }
 
