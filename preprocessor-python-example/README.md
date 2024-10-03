@@ -1,7 +1,7 @@
 Socket MessagePack Preprocessor Python Image Example
 =========================
 
-This example application provides an example on how to create a Python based postprocessor that can be integrated with the NXAI Edge AI Manager.
+This example application provides an example on how to create a Python based preprocessor that can be integrated with the NXAI Edge AI Manager.
 
 # Preprocessors Control Flow
 
@@ -70,9 +70,8 @@ Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugin
     "externalPreprocessors": [
         {
             "Name":"Example-Preprocessor",
-            "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/preprocessors/preprocessor-python-image-example",
-            "SocketPath":"/tmp/example-preprocessor.sock",
-            "ReceiveInputTensor": 1
+            "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/preprocessors/preprocessor-python-example",
+            "SocketPath":"/tmp/example-preprocessor.sock"
         }
     ]
 }

@@ -95,8 +95,9 @@ def main():
 def signalHandler(sig, _):
     print("EXAMPLE PREPROCESSOR: Received interrupt signal: ", sig)
     # Detach and destroy output shm
-    output_shm.detach()
-    output_shm.remove()
+    if output_shm is not None:
+        output_shm.detach()
+        output_shm.remove()
     sys.exit(0)
 
 
