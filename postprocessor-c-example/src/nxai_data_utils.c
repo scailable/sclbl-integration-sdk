@@ -1,4 +1,5 @@
 #include "nxai_data_utils.h"
+#include "nxai_data_structures.h"
 
 #include "mpack.h"
 
@@ -108,7 +109,7 @@ static void write_bboxes( bbox_object_t *bboxes, size_t num_bboxes, mpack_writer
             mpack_write_cstr( writer, "unkown" );
         }
         // Map value
-        mpack_write_bin( writer, (char *) bboxes[class_index].coordinates, bboxes[class_index].length * sizeof( float ) );
+        mpack_write_bin( writer, (char *) bboxes[class_index].coordinates, bboxes[class_index].coords_length * sizeof( float ) );
     }
 
     mpack_finish_map( writer );// Finish "BBoxes_xyxy" map

@@ -168,7 +168,7 @@ char *processMpackDocument( const char *input_buffer, size_t input_buffer_length
             float *coordinates = (float *) malloc( bin_size );
             memcpy( coordinates, bin_data, bin_size );
             char *bbox_class = mpack_node_cstr_alloc( mpack_node_map_key_at( bboxs_node, bboxs_index ), 1024 );
-            bboxs[bboxs_index] = ( bbox_object_t ){ .class_name = bbox_class, .coordinates = coordinates, .format = "xyxy", .length = bin_size / sizeof( float ) };
+            bboxs[bboxs_index] = ( bbox_object_t ){ .class_name = bbox_class, .coordinates = coordinates, .format = "xyxy", .coords_length = bin_size / sizeof( float ) };
         }
     }
 
@@ -189,7 +189,7 @@ char *processMpackDocument( const char *input_buffer, size_t input_buffer_length
     coordinates[1] = 100.0;
     coordinates[2] = 200.0;
     coordinates[3] = 200.0;
-    bboxs[num_bboxs - 1] = ( bbox_object_t ){ .class_name = strdup( "test" ), .format = "xyxy", .length = 4, .coordinates = coordinates };
+    bboxs[num_bboxs - 1] = ( bbox_object_t ){ .class_name = strdup( "test" ), .format = "xyxy", .coords_length = 4, .coordinates = coordinates };
 
     ////////////////////////////////////////////////////
     //// Write output data
