@@ -1,0 +1,13 @@
+[common]
+debug_level=INFO
+[edgeimpulse]
+# Add your own project level Edge Impulse API key
+api_key = ei_your_key_here
+# Option autogenerate images every x seconds as an alternative to sending based on p_value
+auto_generator = True
+# If auto_generator True, every how many seconds upload an image?
+auto_generator_every_seconds = 1
+# Flush the buffer at this length
+samples_buffer_flush_size = 20
+# Send images below this value to EdgeImpulse. Can be between 0.0 and 1.0
+p_value = 0.4

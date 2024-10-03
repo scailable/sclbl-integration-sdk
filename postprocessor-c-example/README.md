@@ -74,7 +74,6 @@ The socket path is always given as the first command line argument when the appl
 
 If the postprocessor is defined correctly, its name should appear in the list of postprocessors in the NX Plugin settings. If it is selected in the plugin settings then the Edge AI Runtime will send data to the postprocessor and wait for its output.
 
-
 # Licence
 
 Copyright 2024, Network Optix, All rights reserved.
