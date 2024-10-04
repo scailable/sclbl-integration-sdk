@@ -31,6 +31,12 @@ The incoming MessagePack message follows a specific schema. If the message is al
             <Coordinates>
         ]
     },
+    "ObjectIDs": {
+        <"Class Name">: [
+            <16-byte UUID>,
+            <16-byte UUID>
+        ]
+    },
     "Scores": {
         <"Class Name"> : <Score>
     }

@@ -21,7 +21,7 @@ The incoming MessagePack message follows a specific schema. If the message is al
 {
     "Timestamp": <Timestamp>,
     "Width": <Width>,
-    "Height": <Hieght>,
+    "Height": <Height>,
     "InputIndex": <Index>,
     "Counts": {
         <"Class Name">: <Class Count>
@@ -29,6 +29,12 @@ The incoming MessagePack message follows a specific schema. If the message is al
     "BBoxes_xyxy": {
         <"Class Name">: [
             <Coordinates>
+        ]
+    },
+    "ObjectIDs": {
+        <"Class Name">: [
+            <16-byte UUID>,
+            <16-byte UUID>
         ]
     },
     "Scores": {

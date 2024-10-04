@@ -19,21 +19,27 @@ The incoming MessagePack message follows a specific schema. If the message is al
 
 ```json
 {
-  "Timestamp": <Timestamp>,
-  "Width": <Width>,
-  "Height": <Height>,
-  "InputIndex": <Index>,
-  "Counts": {
-    <"Class Name">: <Class Count>
-  },
-  "BBoxes_xyxy": {
-    <"Class Name">: [
-      <Coordinates>
-    ]
-  },
-  "Scores": {
-    <"Class Name"> : <Score>
-  }
+    "Timestamp": <Timestamp>,
+    "Width": <Width>,
+    "Height": <Height>,
+    "InputIndex": <Index>,
+    "Counts": {
+        <"Class Name">: <Class Count>
+    },
+    "BBoxes_xyxy": {
+        <"Class Name">: [
+            <Coordinates>
+        ]
+    },
+    "ObjectIDs": {
+        <"Class Name">: [
+            <16-byte UUID>,
+            <16-byte UUID>
+        ]
+    },
+    "Scores": {
+        <"Class Name"> : <Score>
+    }
 }
 ```
 
