@@ -3,53 +3,34 @@ Socket MessagePack Preprocessor Python Image Example
 
 This example application provides an example on how to create a Python based preprocessor that can be integrated with the NXAI Edge AI Manager.
 
+This example reads an image from the AI Manager and will mirror the image horizontally. When this example is enabled, you should see the bounding boxes being mirrored with respect to the image.
+
 # Preprocessors Control Flow
 
-The normal control flow of a preprocessor is to receive a MessagePack binary message representing the inference results from the NXAI Edge AI Manager, and return the same or an altered version of the received MessagePack message.
+The normal control flow of a preprocessor is to receive a MessagePack binary message header from the AI Manager. This message will contain information on how to connect to a Shared Memory segment which contains the input image to the AI Manager.
 
-This example will show how to access the input tensor which the inference results were generated from for additional analysis or presentation. It is possible to define the preprocessor indicating that the Edge AI Runtime should send additional information to allow the preprocessor to access the input tensor. If this setting is enabled, the Edge AI Manager will send an additional messagePack message after the inference results messages containing the relevant fields. The preprocessor should therefore expect two messages before responding.
+The AI Manager will send the input image to the external postprocessors before following any of its own preprocessing steps, such as resizing and normalization. This allows for the external postprocessor to operate on the original image before the rest of the pipeline. 
+For example, if an input stream to the AI Manager is YUV420, when RGB is required, a preprocessor could be added to intercept the original YUV420 image, and convert it to RGB instead.
 
-An external preprocessor can parse the incoming MessagePack message, do analysis, optionally alter it, and return it. The alterations made by an external preprocessor will be kept and sent to the Network Optix server to be represented as bounding boxes or events.
+The external preprocessor could write back an altered image to the shared memory segment sent by the AI Manager, or create a new shared memory segment and write a new image to the new segment. 
 
-An external preprocessor is a standalone application which is expected to receive these MessagePack messages and return a MessagePack message with a compatible format. Instructions can be added to a configuration file to handle executing and terminating the application.
+Finally, the external postprocessor sends back a message to the AI Manager, signalling that it's completed processing. This message contains the new or same shared memory ID, image width, height and channels. These could be the same or changed. The AI Manager will read the image from the shared memory segment ID sent back to the AI Manager, and use the received image width, height and channels in the rest of the pipeline.
 
 # MessagePack schema
 
-The incoming MessagePack message follows a specific schema. If the message is altered, the returned message must follow the same schema. In Json, this schema would look like:
+The header message sent to the external postprocessor contains information about the image and how to retrieve it through shared memory. In Json, this schema would look like:
 
 ```json
 {
-    "Timestamp": <Timestamp>,
+    "SHMKey": <Key>,
+    "SHMID": <ID>,
     "Width": <Width>,
-    "Height": <Hieght>,
-    "InputIndex": <Index>,
-    "Counts": {
-        <"Class Name">: <Class Count>
-    },
-    "BBoxes_xyxy": {
-        <"Class Name">: [
-            <Coordinates>
-        ]
-    },
-    "Scores": {
-        <"Class Name"> : <Score>
-    }
+    "Height": <Height>,
+    "Channels": <Channels>
 }
 ```
 
-The image header message contains fields indicating information about the image dimensions and information to access this data:
-
-```json
-{
-    "Width": <Width>,
-    "Height": <Height>,
-    "Height": <Height>,
-    "SHMKey": <SHM Key>,
-    "SHMID": <SHM ID>
-}
-```
-
-A convenience example function is provided showing how to use this data to access the original tensor data in shared memory.
+The header message sent back to the AI Manager should contain all the same fields. The field values could be the same or changed.
 
 # How to use
 
@@ -81,14 +62,12 @@ This tells the Edge AI Manager about the preprocessor:
 - **Name** gives the preprocesor a name so it can be selected later
 - **Command** defines how to start the preprocessor
 - **SocketPath** tells the AI Manager where to send data to so the external preprocessor will receive it
-- **ReceiveInputTensor** tells the AI Manager if this preprocessor expects information to access the raw input tensor data
 
 The socket path is always given as the first command line argument when the application is started. It is therefore best practice for the external preprocessor application to read its socket path from here, instead of defining the data twice.
 
 ## Selecting to the preprocessor
 
 If the preprocessor is defined correctly, its name should appear in the list of preprocessors in the NX Plugin settings. If it is selected in the plugin settings then the Edge AI Runtime will send data to the preprocessor and wait for its output.
-
 
 # Licence
 
