@@ -21,7 +21,7 @@ The incoming MessagePack message follows a specific schema. If the message is al
 {
     "Timestamp": <Timestamp>,
     "Width": <Width>,
-    "Height": <Hieght>,
+    "Height": <Height>,
     "InputIndex": <Index>,
     "Counts": {
         <"Class Name">: <Class Count>
@@ -30,6 +30,22 @@ The incoming MessagePack message follows a specific schema. If the message is al
         <"Class Name">: [
             <Coordinates>
         ]
+    },
+    "ObjectsMetaData": {
+        <"Class Name">: {
+            "ObjectIDs": [
+                <16-byte UUID>,
+                <16-byte UUID>
+            ],
+            "AttributeKeys": [
+                [<Attribute Key>,<Attribute Key>],
+                [<Attribute Key>,<Attribute Key>]
+            ],
+            "AttributeValues": [
+                [<Attribute Value>,<Attribute Value>],
+                [<Attribute Value>,<Attribute Value>]
+            ]
+        }
     },
     "Scores": {
         <"Class Name"> : <Score>
