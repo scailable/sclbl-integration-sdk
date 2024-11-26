@@ -17,18 +17,16 @@ from PIL import Image
 import msgpack
 
 # Add the nxai-utilities python utilities
-script_location = os.path.dirname(os.path.realpath(__file__))
+if getattr(sys, "frozen", False):
+    script_location = os.path.dirname(sys.executable)
+elif __file__:
+    script_location = os.path.dirname(__file__)
 sys.path.append(os.path.join(script_location, "../sclbl-utilities/python-utilities"))
 
-CONFIG_FILE = (
-    "/opt/networkoptix-metavms/mediaserver/bin/plugins/"
-    "nxai_plugin/nxai_manager/etc/plugin.image.ini"
-)
 
-LOG_FILE = (
-    "/opt/networkoptix-metavms/mediaserver/bin/plugins/"
-    "nxai_plugin/nxai_manager/etc/plugin.image.log"
-)
+CONFIG_FILE = os.path.join(script_location, "..", "etc", "plugin.image.ini")
+
+LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.image.log")
 
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
 logging.basicConfig(
@@ -136,14 +134,6 @@ def main():
             image_header["Height"],
             image_header["Channels"],
         )
-
-        # add image header to output
-        if "IH" not in input_object:
-            input_object["IH"] = {}
-        input_object["IH"]["SHMKey"] = image_header["SHMKey"]
-        input_object["IH"]["Width"] = image_header["Width"]
-        input_object["IH"]["Height"] = image_header["Height"]
-        input_object["IH"]["Channels"] = image_header["Channels"]
 
         # Add extra bbox
         if "BBoxes_xyxy" not in input_object:

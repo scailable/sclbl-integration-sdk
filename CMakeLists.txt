@@ -21,6 +21,9 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/postprocessor-python-example)
 # Add Image Postprocessor Python project
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/postprocessor-python-image-example)
 
+# Add Confidence Postprocessor Python project
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/postprocessor-python-confidences-example)
+
 # Add Postprocessor Python NoResponse project
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/postprocessor-python-noresponse-example)
 
@@ -42,6 +45,7 @@ install(TARGETS
 install(PROGRAMS
     ${CMAKE_CURRENT_BINARY_DIR}/postprocessor-python-example/postprocessor-python-example
     ${CMAKE_CURRENT_BINARY_DIR}/postprocessor-python-image-example/postprocessor-python-image-example
+    ${CMAKE_CURRENT_BINARY_DIR}/postprocessor-python-image-example/postprocessor-python-confidences-example
     ${CMAKE_CURRENT_BINARY_DIR}/preprocessor-python-example/preprocessor-python-example
     ${CMAKE_CURRENT_BINARY_DIR}/postprocessor-python-noresponse-example/postprocessor-python-noresponse-example
     ${CMAKE_CURRENT_BINARY_DIR}/postprocessor-cloud-inference-example/postprocessor-cloud-inference-example
