@@ -1,4 +1,3 @@
-import json
 import os
 import sys
 import socket
@@ -6,14 +5,7 @@ import signal
 import logging
 import logging.handlers
 import configparser
-import io
-import time
 from pprint import pformat
-import msgpack
-import struct
-from math import prod
-from datetime import datetime
-from PIL import Image
 import msgpack
 
 # Add the nxai-utilities python utilities
