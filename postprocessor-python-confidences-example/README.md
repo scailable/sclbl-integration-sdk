@@ -45,13 +45,19 @@ The incoming MessagePack message follows a specific schema. If the message is al
                 [<Attribute Value>,<Attribute Value>],
                 [<Attribute Value>,<Attribute Value>]
             ]
-        }
+            },
+            "Confidences": [
+                <float value>,
+                <float value>
+            ]
     },
     "Scores": {
         <"Class Name"> : <Score>
     }
 }
 ```
+
+The `"Confidences"` data is only included if the `"ReceiveConfidenceData"` flag is set in the postprocessor definition.
 
 The image header message contains fields indicating information about the image dimensions and information to access this data:
 
@@ -222,8 +228,11 @@ This tells the Edge AI Manager about the postprocessor:
 - **Command** defines how to start the postprocessor
 - **SocketPath** tells the AI Manager where to send data to so the external postprocessor will receive it
 - **ReceiveInputTensor** tells the AI Manager if this postprocessor expects information to access the raw input tensor data
+- **ReceiveConfidenceData** tells the AI Manager to send the confidence values of detected objects as metadata.
 
 The socket path is always given as the first command line argument when the application is started. It is therefore best practice for the external postprocessor application to read its socket path from here, instead of defining the data twice.
+
+For performance reasons the confidence values are not sent by the AI Manager by default. It is therefore necessary to include the `ReceiveConfidenceData` flag in the settings to receive the confidence values.
 
 ## Restarting the server
 
