@@ -1,7 +1,9 @@
-Postprocessor Python No Response Example
-=========================
+Postprocessor Python Confidences Example
+============================
 
 This example application provides an example on how to create a Python based postprocessor that can be integrated with the NXAI Edge AI Manager.
+
+This plugin requests the confidences from the AI Manager and adds them as attributes to each object.
 
 # Postprocessors Control Flow
 
@@ -43,13 +45,19 @@ The incoming MessagePack message follows a specific schema. If the message is al
                 [<Attribute Value>,<Attribute Value>],
                 [<Attribute Value>,<Attribute Value>]
             ]
-        }
+            },
+            "Confidences": [
+                <float value>,
+                <float value>
+            ]
     },
     "Scores": {
         <"Class Name"> : <Score>
     }
 }
 ```
+
+The `"Confidences"` data is only included if the `"ReceiveConfidenceData"` flag is set in the postprocessor definition.
 
 The image header message contains fields indicating information about the image dimensions and information to access this data:
 
@@ -86,7 +94,7 @@ git pull --recurse-submodules
 
 ## Configuration of example postprocessor
 
-Create a [configuration file](plugin.noresponse.ini.example) at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.noresponse.ini` and add some overrides for the configuration.
+Create a [configuration file](plugin.example.ini.example) at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.example.ini` and add some overrides for the configuration.
 
 This plugin only supports changing the debug level between DEBUG, INFO, WARNING, ERROR and CRITICAL
 
@@ -156,14 +164,14 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/sclbl-utilities)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/sclbl-utilities/include)
 
 # Add Edge Impulse Postprocessor Python project
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/postprocessor-python-edgeimpulse-example)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/postprocessor-python-confidences-example)
 
 # Add installation option
 install(TARGETS
     DESTINATION /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/
 )
 install(PROGRAMS
-    ${CMAKE_CURRENT_BINARY_DIR}/postprocessor-python-edgeimpulse-example/postprocessor-python-edgeimpulse-example
+    ${CMAKE_CURRENT_BINARY_DIR}/postprocessor-python-confidences-example/postprocessor-python-confidences-example
     DESTINATION /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/
 )
 ```
@@ -197,18 +205,19 @@ cmake --build . --target install
 
 ## Defining the postprocessor
 
-Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/external_postprocessors.json` and add the details of your postprocessor to the root object of that file. For example:
+Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/external_postprocessors.json` and add the details of your postprocessor to the root object of that file.
+
+For example:
 
 ``` json
 {
     "externalPostprocessors": [
         {
-            "Name":"NoResponse-Example-Postprocessor",
-            "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-python-noresponse-example",
-            "SocketPath":"/tmp/python-noresponse-postprocessor.sock",
+            "Name":"Example-Postprocessor-Confidences",
+            "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-python-confidences-example",
+            "SocketPath":"/tmp/python-example-confidences-postprocessor.sock",
             "ReceiveInputTensor": false,
-            "ReceiveBinaryData": false,
-            "NoResponse": true
+            "ReceiveConfidenceData": true
         }
     ]
 }
@@ -219,10 +228,11 @@ This tells the Edge AI Manager about the postprocessor:
 - **Command** defines how to start the postprocessor
 - **SocketPath** tells the AI Manager where to send data to so the external postprocessor will receive it
 - **ReceiveInputTensor** tells the AI Manager if this postprocessor expects information to access the raw input tensor data
-- **ReceiveBinaryData** tells the AI Manager if this postprocessor expects the raw model output
-- **NoResponse** tells the AI Manager to not wait for a response from this postprocessor
+- **ReceiveConfidenceData** tells the AI Manager to send the confidence values of detected objects as metadata.
 
 The socket path is always given as the first command line argument when the application is started. It is therefore best practice for the external postprocessor application to read its socket path from here, instead of defining the data twice.
+
+For performance reasons the confidence values are not sent by the AI Manager by default. It is therefore necessary to include the `ReceiveConfidenceData` flag in the settings to receive the confidence values.
 
 ## Restarting the server
 
@@ -247,7 +257,7 @@ If the postprocessor is defined correctly, its name should appear in the list of
 There is an output log where the uploads can be tracked in real time from the server.
 
 ```shell
-tail -f /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.noresponse.log
+tail -f /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.example.log
 ```
 
 # Licence

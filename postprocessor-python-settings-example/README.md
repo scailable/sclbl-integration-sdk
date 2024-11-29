@@ -1,7 +1,9 @@
-Postprocessor Python No Response Example
-=========================
+Postprocessor Python Setting Example
+============================
 
 This example application provides an example on how to create a Python based postprocessor that can be integrated with the NXAI Edge AI Manager.
+
+This plugin defines its settings in its definition in `external_postprocessors.json`. These settings then appear in the plugin UI and will be passed through to the external postprocessor.
 
 # Postprocessors Control Flow
 
@@ -47,6 +49,9 @@ The incoming MessagePack message follows a specific schema. If the message is al
     },
     "Scores": {
         <"Class Name"> : <Score>
+    },
+    "ExternalProcessorSettings": {
+        <"Setting Key"> : <"Setting Value">
     }
 }
 ```
@@ -86,7 +91,7 @@ git pull --recurse-submodules
 
 ## Configuration of example postprocessor
 
-Create a [configuration file](plugin.noresponse.ini.example) at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.noresponse.ini` and add some overrides for the configuration.
+Create a [configuration file](plugin.example.ini.example) at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.example.ini` and add some overrides for the configuration.
 
 This plugin only supports changing the debug level between DEBUG, INFO, WARNING, ERROR and CRITICAL
 
@@ -96,14 +101,6 @@ For example:
 [common]
 debug_level=DEBUG
 ```
-
-## Use the interval based upload
-
-When the `auto_generator` is set to `True` images will be uploaded according to the value in `auto_generator_every_seconds`
-
-## Use the confidence threshold based upload
-
-When the `auto_generator` is set to `False` images will be uploaded according to the value in `p_value`
 
 ## Preparation of dependencies
 
@@ -156,14 +153,14 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/sclbl-utilities)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/sclbl-utilities/include)
 
 # Add Edge Impulse Postprocessor Python project
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/postprocessor-python-edgeimpulse-example)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/postprocessor-python-settings-example)
 
 # Add installation option
 install(TARGETS
     DESTINATION /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/
 )
 install(PROGRAMS
-    ${CMAKE_CURRENT_BINARY_DIR}/postprocessor-python-edgeimpulse-example/postprocessor-python-edgeimpulse-example
+    ${CMAKE_CURRENT_BINARY_DIR}/postprocessor-python-settings-example/postprocessor-python-settings-example
     DESTINATION /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/
 )
 ```
@@ -197,18 +194,35 @@ cmake --build . --target install
 
 ## Defining the postprocessor
 
-Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/external_postprocessors.json` and add the details of your postprocessor to the root object of that file. For example:
+Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/external_postprocessors.json` and add the details of your postprocessor to the root object of that file.
+
+For example:
 
 ``` json
 {
     "externalPostprocessors": [
         {
-            "Name":"NoResponse-Example-Postprocessor",
-            "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-python-noresponse-example",
-            "SocketPath":"/tmp/python-noresponse-postprocessor.sock",
+            "Name":"Example-Postprocessor-Setting",
+            "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-python-settings-example",
+            "SocketPath":"/tmp/python-example-settings-postprocessor.sock",
             "ReceiveInputTensor": false,
-            "ReceiveBinaryData": false,
-            "NoResponse": true
+            "ReceiveConfidenceData": false,
+            "Settings": [
+                {
+                    "type": "TextField",
+                    "name": "externalprocessor.attributeName",
+                    "caption": "Attribute Name",
+                    "description": "The name of the example attribute",
+                    "defaultValue": "Key"
+                },
+                {
+                    "type": "TextField",
+                    "name": "externalprocessor.attributeValue",
+                    "caption": "Attribute Value",
+                    "description": "The value of the example attribute",
+                    "defaultValue": "Value"
+                }
+            ]
         }
     ]
 }
@@ -219,10 +233,18 @@ This tells the Edge AI Manager about the postprocessor:
 - **Command** defines how to start the postprocessor
 - **SocketPath** tells the AI Manager where to send data to so the external postprocessor will receive it
 - **ReceiveInputTensor** tells the AI Manager if this postprocessor expects information to access the raw input tensor data
-- **ReceiveBinaryData** tells the AI Manager if this postprocessor expects the raw model output
-- **NoResponse** tells the AI Manager to not wait for a response from this postprocessor
+- **Settings** defines the settings which will appear in the plugin UI.
 
 The socket path is always given as the first command line argument when the application is started. It is therefore best practice for the external postprocessor application to read its socket path from here, instead of defining the data twice.
+
+## Defining the settings
+
+The settings should be defined as in the schema from the NetworkOptix Metadata SDK, as documented in `settings_model.md` ( included in this directory as an example ).
+
+The settings will always be sent to the external postrprocessor as a string representation, this includes integers and floats. It will be up to the external postprocessor to correctly convert these values to usable types.
+
+The `"name"` value in the settings should always start with `externalprocessor.`, otherwise they will be ignored. 
+For performance reasons, settings aren't sorted per external postprocessor. This means that if you have multiple external postprocessors each with their own settings, then each postprocessor will receive all settings for all postprocessors.
 
 ## Restarting the server
 
@@ -247,7 +269,7 @@ If the postprocessor is defined correctly, its name should appear in the list of
 There is an output log where the uploads can be tracked in real time from the server.
 
 ```shell
-tail -f /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.noresponse.log
+tail -f /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.example.log
 ```
 
 # Licence

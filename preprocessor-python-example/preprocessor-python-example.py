@@ -7,7 +7,10 @@ from PIL import Image
 import msgpack
 
 # Add the nxai-utilities python utilities
-script_location = os.path.dirname(os.path.realpath(__file__))
+if getattr(sys, "frozen", False):
+    script_location = os.path.dirname(sys.executable)
+elif __file__:
+    script_location = os.path.dirname(__file__)
 sys.path.append(os.path.join(script_location, "../nxai-utilities/python-utilities"))
 import communication_utils
 

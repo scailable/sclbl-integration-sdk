@@ -163,7 +163,7 @@ Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugin
             "Name":"Cloud-Inference-Postprocessor",
             "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-cloud-inference-example",
             "SocketPath":"/tmp/python-cloud-inference-postprocessor.sock",
-            "ReceiveInputTensor": 1
+            "ReceiveInputTensor": true
         }
     ]
 }
