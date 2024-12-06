@@ -8,19 +8,17 @@ import configparser
 from pprint import pformat
 
 # Add the nxai-utilities python utilities
-script_location = os.path.dirname(os.path.realpath(__file__))
+if getattr(sys, "frozen", False):
+    script_location = os.path.dirname(sys.executable)
+elif __file__:
+    script_location = os.path.dirname(__file__)
 sys.path.append(os.path.join(script_location, "../nxai-utilities/python-utilities"))
 import communication_utils
 
-CONFIG_FILE = (
-    "/opt/networkoptix-metavms/mediaserver/bin/plugins/"
-    "nxai_plugin/nxai_manager/etc/plugin.noresponse.ini"
-)
 
-LOG_FILE = (
-    "/opt/networkoptix-metavms/mediaserver/bin/plugins/"
-    "nxai_plugin/nxai_manager/etc/plugin.noresponse.log"
-)
+CONFIG_FILE = os.path.join(script_location, "..", "etc", "plugin.noresponse.ini")
+
+LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.noresponse.log")
 
 
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels

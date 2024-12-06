@@ -9,8 +9,8 @@
 #include "nxai_socket_utils.h"
 
 // Deps includes
+#include "data_utils.h"
 #include "nxai_data_structures.h"
-#include "nxai_data_utils.h"
 #include "nxai_shm_utils.h"
 
 #define STRLEN( s ) ( sizeof( s ) / sizeof( s[0] ) )
@@ -137,7 +137,7 @@ char *processMpackDocument( const char *input_buffer, size_t input_buffer_length
         for ( size_t counts_index = 0; counts_index < num_counts; counts_index++ ) {
             uint32_t count = mpack_node_u32( mpack_node_map_value_at( counts_node, counts_index ) );
             char *count_class = mpack_node_cstr_alloc( mpack_node_map_key_at( counts_node, counts_index ), 1024 );
-            counts[counts_index] = ( count_object_t ){ .class_name = count_class, .count = count };
+            counts[counts_index] = (count_object_t) { .class_name = count_class, .count = count };
         }
     }
 
@@ -154,7 +154,7 @@ char *processMpackDocument( const char *input_buffer, size_t input_buffer_length
         for ( size_t scores_index = 0; scores_index < num_scores; scores_index++ ) {
             float score = mpack_node_float( mpack_node_map_value_at( scores_node, scores_index ) );
             char *score_class = mpack_node_cstr_alloc( mpack_node_map_key_at( scores_node, scores_index ), 1024 );
-            scores[scores_index] = ( score_object_t ){ .class_name = score_class, .score = score };
+            scores[scores_index] = (score_object_t) { .class_name = score_class, .score = score };
         }
     }
 
@@ -176,7 +176,7 @@ char *processMpackDocument( const char *input_buffer, size_t input_buffer_length
             float *coordinates = (float *) malloc( bin_size );
             memcpy( coordinates, bin_data, bin_size );
             char *bbox_class = mpack_node_cstr_alloc( mpack_node_map_key_at( bboxs_node, bboxs_index ), 1024 );
-            bboxs[bboxs_index] = ( bbox_object_t ){ .class_name = bbox_class, .coordinates = coordinates, .format = "xyxy", .coords_length = bin_size / sizeof( float ) };
+            bboxs[bboxs_index] = (bbox_object_t) { .class_name = bbox_class, .coordinates = coordinates, .format = "xyxy", .coords_length = bin_size / sizeof( float ) };
         }
     }
 
@@ -193,7 +193,7 @@ char *processMpackDocument( const char *input_buffer, size_t input_buffer_length
     uint64_t cumulative_count = processInputTensor( image_header, header_length );
     num_counts++;
     counts = realloc( counts, sizeof( count_object_t ) * num_counts );
-    counts[num_counts - 1] = ( count_object_t ){ .class_name = strdup( "ImageBytesCumalitive" ), .count = cumulative_count };
+    counts[num_counts - 1] = (count_object_t) { .class_name = strdup( "ImageBytesCumalitive" ), .count = cumulative_count };
 
     ////////////////////////////////////////////////////
     //// Write output data
