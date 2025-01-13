@@ -114,7 +114,7 @@ Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugin
             "Name":"EI-Upload-Postprocessor",
             "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-python-edgeimpulse-example",
             "SocketPath":"/tmp/python-edgeimpulse-postprocessor.sock",
-            "ReceiveInputTensor": 1,
+            "ReceiveInputTensor": true,
             "RunLast": false,
             "NoResponse": true
         },
@@ -122,19 +122,19 @@ Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugin
             "Name":"Example-Postprocessor",
             "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-python-example",
             "SocketPath":"/tmp/python-example-postprocessor.sock",
-            "ReceiveInputTensor": 0
+            "ReceiveInputTensor": false
         },
         {
             "Name":"Image-Postprocessor",
             "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-python-image-example",
             "SocketPath":"/tmp/python-image-postprocessor.sock",
-            "ReceiveInputTensor": 1
+            "ReceiveInputTensor": true
         },
         {
             "Name":"NoResponse-Postprocessor",
             "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-python-noresponse-example",
             "SocketPath":"/tmp/python-noresponse-postprocessor.sock",
-            "ReceiveInputTensor": 0,
+            "ReceiveInputTensor": false,
             "ReceiveBinaryData": false,
             "NoResponse": true
         },
@@ -142,7 +142,7 @@ Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugin
             "Name":"Cloud-Inference-Postprocessor",
             "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-cloud-inference-example",
             "SocketPath":"/tmp/python-cloud-inference-postprocessor.sock",
-            "ReceiveInputTensor": 1
+            "ReceiveInputTensor": true
         }
 
     ]

@@ -15,15 +15,13 @@ from datetime import datetime
 from PIL import Image
 import edgeimpulse
 
-CONFIG_FILE = (
-    "/opt/networkoptix-metavms/mediaserver/bin/plugins/"
-    "nxai_plugin/nxai_manager/etc/plugin.edgeimpulse.ini"
-)
+if getattr(sys, "frozen", False):
+    script_location = os.path.dirname(sys.executable)
+elif __file__:
+    script_location = os.path.dirname(__file__)
+CONFIG_FILE = os.path.join(script_location, "..", "etc", "plugin.cloud-edgeimpulse.ini")
 
-LOG_FILE = (
-    "/opt/networkoptix-metavms/mediaserver/bin/plugins/"
-    "nxai_plugin/nxai_manager/etc/plugin.edgeimpulse.log"
-)
+LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.cloud-edgeimpulse.log")
 
 # Add your own project level Edge Impulse API key
 # Please use the CONFIG_FILE to set [edgeimpulse][api_key] to your edge impulse api key
@@ -48,7 +46,6 @@ logging.basicConfig(
 )
 
 # Add the nxai-utilities python utilities
-script_location = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(script_location, "../nxai-utilities/python-utilities"))
 import communication_utils
 

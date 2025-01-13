@@ -5,6 +5,7 @@ import signal
 import logging
 import logging.handlers
 import configparser
+from pprint import pformat
 
 # Add the nxai-utilities python utilities
 if getattr(sys, "frozen", False):
@@ -15,10 +16,10 @@ sys.path.append(os.path.join(script_location, "../nxai-utilities/python-utilitie
 import communication_utils
 
 
-CONFIG_FILE = os.path.join(script_location, "..", "etc", "plugin.example.ini")
+CONFIG_FILE = os.path.join(script_location, "..", "etc", "plugin.settings.ini")
 
 # Set up logging
-LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.example.log")
+LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.settings.log")
 
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
 logging.basicConfig(
@@ -30,12 +31,12 @@ logging.basicConfig(
 
 # The name of the postprocessor.
 # This is used to match the definition of the postprocessor with routing.
-Postprocessor_Name = "Python-Example-Postprocessor"
+Postprocessor_Name = "Python-Example-Setting-Postprocessor"
 
 # The socket this postprocessor will listen on.
 # This is always given as the first argument when the process is started
 # But it can be manually defined as well, as long as it is the same as the socket path in the runtime settings
-Postprocessor_Socket_Path = "/tmp/python-example-postprocessor.sock"
+Postprocessor_Socket_Path = "/tmp/python-example-settings-postprocessor.sock"
 
 # Data Types
 # 1:  //FLOAT
@@ -89,6 +90,7 @@ def signal_handler(sig, _):
 
 def main():
     # Start socket listener to receive messages from NXAI runtime
+    logger.debug("Creating socket at " + Postprocessor_Socket_Path)
     server = communication_utils.startUnixSocketServer(Postprocessor_Socket_Path)
 
     # Wait for messages in a loop
@@ -107,15 +109,26 @@ def main():
         input_object = communication_utils.parseInferenceResults(input_message)
 
         # Use pformat to format the deep object
-        # formatted_unpacked_object = pformat(input_object)
-        # logging.debug(f'Unpacked:\n\n{formatted_unpacked_object}\n\n')
+        formatted_unpacked_object = pformat(input_object)
+        logging.info(f"Unpacked:\n\n{formatted_unpacked_object}\n\n")
 
-        # Add extra bbox
-        if "BBoxes_xyxy" not in input_object:
-            input_object["BBoxes_xyxy"] = {}
-        input_object["BBoxes_xyxy"]["test"] = [100.0, 100.0, 200.0, 200.0]
+        # Read the settings passed through from the AI Manager and add them as attributes
+        for _, class_data in input_object["ObjectsMetaData"].items():
+            for object_index in range(len(class_data["AttributeKeys"])):
+                for setting_name, setting_value in input_object[
+                    "ExternalProcessorSettings"
+                ].items():
+                    if setting_name == "externalprocessor.attributeName":
+                        class_data["AttributeKeys"][object_index].append(setting_value)
+                    if setting_name == "externalprocessor.attributeValue":
+                        class_data["AttributeValues"][object_index].append(
+                            setting_value
+                        )
 
-        logger.info("Added test bounding box to output")
+        formatted_unpacked_object = pformat(input_object)
+        logging.info(f"Packing:\n\n{formatted_unpacked_object}\n\n")
+
+        logger.info("Added attributes to all objects.")
 
         # Write object back to string
         output_message = communication_utils.writeInferenceResults(input_object)
@@ -127,6 +140,8 @@ def main():
 if __name__ == "__main__":
     ## initialize the logger
     logger = logging.getLogger(__name__)
+
+    logger.info("Location: " + str(script_location))
 
     ## read configuration file if it's available
     config()

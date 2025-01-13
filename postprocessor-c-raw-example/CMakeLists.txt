@@ -8,7 +8,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_executable(postprocessor-c-raw-example
   src/main.c
-  src/nxai_data_utils.c
+  src/data_utils.c
 
   # Add local dependencies
   deps/mpack.c

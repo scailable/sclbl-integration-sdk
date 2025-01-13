@@ -13,20 +13,17 @@ import numpy as np
 from aws_utils import classify_faces, create_session
 
 # Add the nxai-utilities python utilities
-script_location = os.path.dirname(os.path.realpath(__file__))
+if getattr(sys, "frozen", False):
+    script_location = os.path.dirname(sys.executable)
+elif __file__:
+    script_location = os.path.dirname(__file__)
 sys.path.append(os.path.join(script_location, "../nxai-utilities/python-utilities"))
 import communication_utils
 
-CONFIG_FILE = (
-    "/opt/networkoptix-metavms/mediaserver/bin/plugins/"
-    "nxai_plugin/nxai_manager/etc/plugin.cloud-inference.ini"
-)
+CONFIG_FILE = os.path.join(script_location, "..", "etc", "plugin.cloud-inference.ini")
 
 # Set up logging
-LOG_FILE = (
-    "/opt/networkoptix-metavms/mediaserver/bin/plugins/"
-    "nxai_plugin/nxai_manager/etc/plugin.cloud-inference.log"
-)
+LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.cloud-inference.log")
 
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
 logging.basicConfig(

@@ -10,7 +10,7 @@ set(CMAKE_C_STANDARD 11)
 
 add_executable(postprocessor-c-image-example
   src/main.c
-  src/nxai_data_utils.c
+  src/data_utils.c
 
   # Add local dependencies
   deps/mpack.c
