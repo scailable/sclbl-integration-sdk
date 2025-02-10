@@ -23,7 +23,7 @@ git pull --recurse-submodules
 
 The repository should be cloned with `--recurse-submodules`.
 
-## Requirements to compile the postprocessors
+## Requirements to compile the pre/postprocessors
 
 These applications can be compiled on any architecture natively in a Linux environment.
 
@@ -34,14 +34,14 @@ sudo apt install cmake
 sudo apt install g++
 ```
 
-For the python postprocessors the following is also required
+For the python pre/postprocessors the following is also required
 
 ```shell
 sudo apt install python3-pip
 sudo apt install python3.12-venv
 ```
 
-## Requirements to run the postprocessors
+## Requirements to run the pre/postprocessors
 
 These applications can be run on any platform on which they can be compiled.
 
@@ -51,7 +51,7 @@ These applications can be run on any platform on which they can be compiled.
 
 This project is CMake based, and all its modules can be compiled or gathered with CMake commands.
 
-Because the different postprocessors must be compiled for each hardware architecture this repository does not include pre-built binaries. All processors can be compiled manually.
+Because the different pre/postprocessors must be compiled for each hardware architecture this repository does not include pre-built binaries. All processors can be compiled manually.
 
 Change into the directory created for the project if you're not already there.
 
@@ -82,30 +82,31 @@ cmake ..
 Build all targets:
 
 ```shell
-make
+cmake --build .
 ```
 
 This will build the default target, which includes the all the example applications that are active in the `CMakeLists.txt`.
 
 It is possible to only run specific examples, refer to the readme files in the subdirectories of those examples for specific instructions.
 
-## Install the postprocessors
+## Install the pre/postprocessors
 
 Before installing make sure the target directory is writable.
 
 ```shell
 sudo chmod 777 /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/
+sudo chmod 777 /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/preprocessors/
 ```
 
-To install the generated postprocessor examples to the default postprocessors folder:
+To install the generated pre/postprocessor examples to the default pre/postprocessors folder:
 
 ```shell
 cmake --build . --target install
 ```
 
-## Defining the postprocessor
+## Defining the pre/postprocessors
 
-Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/external_postprocessors.json` and add the details of your postprocessors to the root object of that file. For example the following file enables *all* python based postprocessors:
+Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/external_postprocessors.json` or `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/preprocessors/external_preprocessors.json` and add the details of your pre/postprocessors to the root object of that file. For example the following file enables *all* python based pre/postprocessors:
 
 ```json
 {
@@ -149,23 +150,53 @@ Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugin
 }
 ```
 
+``` json
+{
+    "externalPreprocessors": [
+        {
+            "Name":"Example-Preprocessor",
+            "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/preprocessors/preprocessor-python-example",
+            "SocketPath":"/tmp/example-preprocessor.sock"
+        }
+    ]
+}
+```
+
 ## Restarting the server
 
-Finally, to (re)load your new postprocessor, make sure to restart the NX Server with:
+Finally, to (re)load your new pre/postprocessor, make sure to restart the NX Server with:
 
 ```shell
 sudo service networkoptix-metavms-mediaserver restart
 ```
 
-You also want to make sure the postprocessor can be used by the NX AI Manager (this is the mostly same command as earlier)
+You also want to make sure the pre/postprocessor can be used by the NX AI Manager (this is the mostly same command as earlier)
 
-```
+```shell
 sudo chmod -R a+x /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/
+sudo chmod -R a+x /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/preprocessors/
 ```
 
-## Selecting to the postprocessor
+## Selecting to the pre/postprocessor
 
-If the postprocessor is defined correctly, its name should appear in the list of postprocessors in the NX Plugin settings. If it is selected in the plugin settings then the Edge AI Runtime will send data to the postprocessor and wait for its output.
+If the pre/postprocessor is defined correctly, its name should appear in the list of pre/postprocessors in the NX Cloud Pipelines UI. If it is selected in the pipeline settings then the NxAI Manager will send data to the pre/postprocessor and wait for its output.
+
+# Troubleshooting
+
+## Failed to load Python shared library
+
+If you encounter a bug similar to the following:
+
+```
+[PYI-1002328:ERROR] Failed to load Python shared library '/tmp/_MEIse5hvf/libpython3.x.so': dlopen: /tmp/_MEIse5hvf/libpython3.x.so: cannot open shared object file: No such file or directory
+```
+
+This is due to a bug in PyInstaller. PyInstaller is used in this repository only for demonstrative purposes, and is not strictly necessary or even the best tool for your project.
+
+It is often sufficient to recompile the pre/postprocessors by running:
+```shell
+cmake --build .
+```
 
 # Directory structure
 
@@ -175,76 +206,111 @@ If the postprocessor is defined correctly, its name should appear in the list of
 ├── nxai-utilities
 │   ├── CMakeLists.txt
 │   ├── include
+│   │   ├── mpack.h
 │   │   ├── musl_time.h
 │   │   ├── nxai_data_structures.h
+│   │   ├── nxai_data_utils.h
 │   │   ├── nxai_process_utils.h
 │   │   ├── nxai_shm_utils.h
-│   │   └── nxai_socket_utils.h
+│   │   ├── nxai_socket_utils.h
+│   │   └── yyjson.h
 │   ├── python-utilities
 │   │   ├── communication_utils.py
 │   │   └── requirements.txt
 │   ├── README.md
 │   └── src
+│       ├── mpack.c
+│       ├── nxai_data_utils.c
 │       ├── nxai_process_utils.c
 │       ├── nxai_shm_utils.c
-│       └── nxai_socket_utils.c
+│       ├── nxai_socket_utils.c
+│       └── yyjson.c
 ├── postprocessor-c-example
 │   ├── CMakeLists.txt
-│   ├── README.md
 │   ├── deps
+│   │   ├── data_utils.h
 │   │   ├── mpack.c
-│   │   ├── mpack.h
-│   │   └── nxai_data_utils.h
+│   │   └── mpack.h
+│   ├── README.md
 │   └── src
-│       ├── main.c
-│       └── nxai_data_utils.c
+│       ├── data_utils.c
+│       └── main.c
 ├── postprocessor-c-image-example
 │   ├── CMakeLists.txt
-│   ├── README.md
 │   ├── deps
+│   │   ├── data_utils.h
 │   │   ├── mpack.c
-│   │   ├── mpack.h
-│   │   └── nxai_data_utils.h
+│   │   └── mpack.h
+│   ├── README.md
 │   └── src
-│       ├── main.c
-│       └── nxai_data_utils.c
+│       ├── data_utils.c
+│       └── main.c
+├── postprocessor-cloud-inference-example
+│   ├── aws_utils.py
+│   ├── CMakeLists.txt
+│   ├── plugin.cloud-inference.ini.example
+│   ├── postprocessor-cloud-inference-example.py
+│   ├── README.md
+│   └── requirements.txt
 ├── postprocessor-c-raw-example
 │   ├── CMakeLists.txt
-│   ├── README.md
 │   ├── deps
+│   │   ├── data_utils.h
 │   │   ├── mpack.c
-│   │   ├── mpack.h
-│   │   └── nxai_data_utils.h
-│   └── src
-│       ├── main.c
-│       └── nxai_data_utils.c
-├── postprocessor-cloud-inference-example
-│   ├── CMakeLists.txt
+│   │   └── mpack.h
 │   ├── README.md
-│   ├── aws_utils.py
-│   ├── postprocessor-cloud-inference-example.py
+│   └── src
+│       ├── data_utils.c
+│       └── main.c
+├── postprocessor-python-confidences-example
+│   ├── CMakeLists.txt
+│   ├── plugin.confidences.ini.example
+│   ├── postprocessor-python-confidences-example.py
+│   ├── README.md
 │   └── requirements.txt
 ├── postprocessor-python-edgeimpulse-example
 │   ├── CMakeLists.txt
-│   ├── README.md
+│   ├── plugin.edgeimpulse.ini.example
 │   ├── postprocessor-python-edgeimpulse-example.py
+│   ├── README.md
+│   └── requirements.txt
+├── postprocessor-python-events-example
+│   ├── CMakeLists.txt
+│   ├── plugin.events.ini.example
+│   ├── postprocessor-python-events-example.py
+│   ├── README.md
 │   └── requirements.txt
 ├── postprocessor-python-example
 │   ├── CMakeLists.txt
-│   ├── README.md
+│   ├── plugin.example.ini.example
 │   ├── postprocessor-python-example.py
+│   ├── README.md
 │   └── requirements.txt
 ├── postprocessor-python-image-example
 │   ├── CMakeLists.txt
-│   ├── README.md
+│   ├── plugin.image.ini.example
 │   ├── postprocessor-python-image-example.py
+│   ├── README.md
 │   └── requirements.txt
 ├── postprocessor-python-noresponse-example
 │   ├── CMakeLists.txt
-│   ├── README.md
+│   ├── plugin.noresponse.ini.example
 │   ├── postprocessor-python-noresponse-example.py
+│   ├── README.md
 │   └── requirements.txt
-└── sclbl-utilities
+├── postprocessor-python-settings-example
+│   ├── CMakeLists.txt
+│   ├── plugin.settings.ini.example
+│   ├── postprocessor-python-settings-example.py
+│   ├── README.md
+│   ├── requirements.txt
+│   └── settings_model.md
+├── preprocessor-python-example
+│   ├── CMakeLists.txt
+│   ├── preprocessor-python-example.py
+│   ├── README.md
+│   └── requirements.txt
+└── README.md
 ```
 
 # Licence
