@@ -1,36 +1,51 @@
-Socket MessagePack Preprocessor Python Image Example
+Socket MessagePack Preprocessor Python Tensor Example
 =========================
 
 This example application provides an example on how to create a Python based preprocessor that can be integrated with the NXAI Edge AI Manager.
 
-This example reads an image from the AI Manager and will mirror the image horizontally. When this example is enabled, you should see the bounding boxes being mirrored with respect to the image.
+This example receives a tensor from the AI Manager and will adjust the NMS sensitivity ( if present ).
 
 # Preprocessors Control Flow
 
-The normal control flow of a preprocessor is to receive a MessagePack binary message header from the AI Manager. This message will contain information on how to connect to a Shared Memory segment which contains the input image to the AI Manager.
+The normal control flow of a preprocessor is to receive a MessagePack binary message header from the AI Manager. This message will contain information on how to connect to a Shared Memory segment which contains a MessagePack encoded tensor structure which will be given to the model.
 
-The AI Manager will send the input image to the external postprocessors before following any of its own preprocessing steps, such as resizing and normalization. This allows for the external postprocessor to operate on the original image before the rest of the pipeline. 
-For example, if an input stream to the AI Manager is YUV420, when RGB is required, a preprocessor could be added to intercept the original YUV420 image, and convert it to RGB instead.
+The AI Manager will send the tensor message after its internal preprocessing steps.
 
-The external preprocessor could write back an altered image to the shared memory segment sent by the AI Manager, or create a new shared memory segment and write a new image to the new segment. 
+The external preprocessor could write back an altered tensor to the shared memory segment sent by the AI Manager, or create a new shared memory segment and write a new tensor to the new segment. 
 
-Finally, the external postprocessor sends back a message to the AI Manager, signalling that it's completed processing. This message contains the new or same shared memory ID, image width, height and channels. These could be the same or changed. The AI Manager will read the image from the shared memory segment ID sent back to the AI Manager, and use the received image width, height and channels in the rest of the pipeline.
+Finally, the external preprocessor sends back a message to the AI Manager, signalling that it's completed processing. This message contains the new or same shared memory ID. The AI Manager will read the tensor from the shared memory segment ID sent back to the AI Manager, and pass it to the model.
 
-# MessagePack schema
+# Message schema
 
-The header message sent to the external postprocessor contains information about the image and how to retrieve it through shared memory. In Json, this schema would look like:
+Communication between the AI Manager and Tensor Preprocessor consists of two messages. A small header message is sent over socket, and a large tensor message is made available over SHM. When the header message is sent, the processor can assume that the tensor message is ready on the SHM. When the preprocessor responds with a header message over socket, the AI Manager will assume that processing is completed, and will copy back the SHM message.
+
+## Header message
+
+The header message sent to the external postprocessor is MessagePack encoded and contains information about the image and how to retrieve it through shared memory. In Json, this schema would look like:
 
 ```json
 {
     "SHMKey": <Key>,
     "SHMID": <ID>,
-    "Width": <Width>,
-    "Height": <Height>,
-    "Channels": <Channels>
 }
 ```
 
-The header message sent back to the AI Manager should contain all the same fields. The field values could be the same or changed.
+The header message sent back to the AI Manager should contain at least the SHMID field, whether the ID was changed or not.
+
+## Tensor message
+
+The tensor message can contain large amounts of binary data, and is therefore sent over shared memory as a MessagePack encoded tensor structure. In Json, this schema would look like:
+
+```json
+{
+    "Tensors": {"output_name1": [...], "output_name2": [...], ...},
+    "TensorsRanks": [rank1, rank2, ...],
+    "TensorShapes": [[shape1], [shape2], ...],
+    "TensorDataTypes": [dtype1, dtype2, ...]
+}
+```
+
+The tensor preprocessor is free to add, remove or edit tensors, as long as the tensors are compatible with the assigned model.
 
 # How to use
 
@@ -50,8 +65,8 @@ Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugin
 {
     "externalPreprocessors": [
         {
-            "Name":"Example-Preprocessor",
-            "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/preprocessors/preprocessor-python-example",
+            "Name":"Example-Tensor-Preprocessor",
+            "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/preprocessors/preprocessor-python-tensor-example",
             "SocketPath":"/tmp/example-preprocessor.sock",
             "Schedule":"TENSOR"
         }
