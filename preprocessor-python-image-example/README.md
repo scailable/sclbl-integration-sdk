@@ -50,10 +50,19 @@ Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugin
 {
     "externalPreprocessors": [
         {
-            "Name":"Example-Preprocessor",
-            "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/preprocessors/preprocessor-python-example",
-            "SocketPath":"/tmp/example-preprocessor.sock",
-            "Schedule":"IMAGE"
+            "Name":"Example-Image-Preprocessor",
+            "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/preprocessors/preprocessor-python-image-example",
+            "SocketPath":"/tmp/example-image-preprocessor.sock",
+            "Schedule":"IMAGE",
+            "Settings": [
+                {
+                    "type": "SwitchButton",
+                    "name": "externalprocessor.mirrorimage",
+                    "caption": "Mirror Image",
+                    "description": "When this switch is active the input image to the AI Manager will be mirrored.",
+                    "defaultValue": true
+                }
+            ]
         }
     ]
 }

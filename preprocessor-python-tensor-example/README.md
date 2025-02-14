@@ -68,7 +68,19 @@ Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugin
             "Name":"Example-Tensor-Preprocessor",
             "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/preprocessors/preprocessor-python-tensor-example",
             "SocketPath":"/tmp/example-preprocessor.sock",
-            "Schedule":"TENSOR"
+            "Schedule":"TENSOR",
+            "Settings": [
+                {
+                    "type": "DoubleSpinBox",
+                    "name": "externalprocessor.nmsoverride",
+                    "caption": "NMS Override",
+                    "description": "An example setting to override the NMS value of the model",
+                    "defaultValue": 3.5,
+                    "minValue": 0.1,
+                    "maxValue": 0.9,
+                    "isActive": false
+                }
+            ]
         }
     ]
 }

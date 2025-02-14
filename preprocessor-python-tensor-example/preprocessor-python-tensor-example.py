@@ -29,10 +29,6 @@ logging.basicConfig(
     filemode="w",
 )
 
-# The name of the preprocessor.
-# This is used to match the definition of the preprocessor with routing.
-Preprocessor_Name = "Python-Tensor-Example-Preprocessor"
-
 # The socket this preprocessor will listen on.
 # This is always given as the first argument when the process is started
 # But it can be manually defined as well, as long as it is the same as the socket path in the runtime settings
@@ -43,7 +39,7 @@ global output_shm
 output_shm = None
 
 
-def parseTensorFromSHM(shm_key: int):
+def parseTensorFromSHM(shm_key: int, external_settings: dict):
 
     ######### Get input tensor from SHM
     logger.info("Got shm key: " + str(shm_key))
@@ -58,13 +54,22 @@ def parseTensorFromSHM(shm_key: int):
         logger.error("Invalid input tensor received. Ignoring.")
         return 0
 
+    ######## Get nms setting ( if any )
+
+    new_nms_value = 0.8
+    if "externalprocessor.nmsoverride" in external_settings:
+        try:
+            new_nms_value = float(external_settings["externalprocessor.nmsoverride"])
+        except:
+            pass
+
     ######## Modify tensor as example
 
     for tensor_name, _ in tensor_data["Tensors"].items():
         logger.info("Got tensor name: " + str(tensor_name))
         if tensor_name == "nms_sensitivity-":
-            # Set nms to 0.8
-            tensor_data["Tensors"][tensor_name] = struct.pack("f", 0.9)
+            # Set nms to new_nms_value
+            tensor_data["Tensors"][tensor_name] = struct.pack("f", new_nms_value)
 
     ######## Write modified tensor to SHM
 
@@ -99,17 +104,24 @@ def main():
             # Request timed out. Continue waiting
             continue
 
-        image_header = msgpack.unpackb(input_message)
-        print("EXAMPLE PREPROCESSOR: Received input message: ", image_header)
+        tensor_header = msgpack.unpackb(input_message)
+        print("EXAMPLE PREPROCESSOR: Received input message: ", tensor_header)
+
+        external_settings = {}
+        if "ExternalProcessorSettings" in tensor_header:
+            logger.info(
+                "Got settings: " + str(tensor_header["ExternalProcessorSettings"])
+            )
+            external_settings = tensor_header["ExternalProcessorSettings"]
 
         # Process image
-        output_shm_id = parseTensorFromSHM(image_header["SHMKey"])
+        output_shm_id = parseTensorFromSHM(tensor_header["SHMKey"], external_settings)
 
         if output_shm_id != 0:
-            image_header["SHMID"] = output_shm_id
+            tensor_header["SHMID"] = output_shm_id
 
         # Write header to respond
-        output_message = msgpack.packb(image_header)
+        output_message = msgpack.packb(tensor_header)
 
         # Send message back to runtime
         communication_utils.sendMessageOverConnection(connection, output_message)
