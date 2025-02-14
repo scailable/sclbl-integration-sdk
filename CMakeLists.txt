@@ -36,8 +36,11 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/postprocessor-python-noresponse-exa
 # Add Cloud Inference Postprocessor Python project
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/postprocessor-cloud-inference-example)
 
-# Add Preprocessor Python project
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/preprocessor-python-example)
+# Add Image Preprocessor Python project
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/preprocessor-python-image-example)
+
+# Add Tensor Preprocessor Python project
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/preprocessor-python-tensor-example)
 
 # # Add installation option
 install(TARGETS
@@ -53,7 +56,8 @@ install(PROGRAMS
     ${CMAKE_CURRENT_BINARY_DIR}/postprocessor-python-image-example/postprocessor-python-image-example
     ${CMAKE_CURRENT_BINARY_DIR}/postprocessor-python-confidences-example/postprocessor-python-confidences-example
     ${CMAKE_CURRENT_BINARY_DIR}/postprocessor-python-settings-example/postprocessor-python-settings-example
-    ${CMAKE_CURRENT_BINARY_DIR}/preprocessor-python-example/preprocessor-python-example
+    ${CMAKE_CURRENT_BINARY_DIR}/preprocessor-python-image-example/preprocessor-python-image-example
+    ${CMAKE_CURRENT_BINARY_DIR}/preprocessor-python-tensor-example/preprocessor-python-tensor-example
     ${CMAKE_CURRENT_BINARY_DIR}/postprocessor-python-noresponse-example/postprocessor-python-noresponse-example
     ${CMAKE_CURRENT_BINARY_DIR}/postprocessor-python-events-example/postprocessor-python-events-example
     ${CMAKE_CURRENT_BINARY_DIR}/postprocessor-cloud-inference-example/postprocessor-cloud-inference-example
@@ -62,6 +66,7 @@ install(PROGRAMS
 
 # Install preprocessors
 install(PROGRAMS
-    ${CMAKE_CURRENT_BINARY_DIR}/preprocessor-python-example/preprocessor-python-example
+    ${CMAKE_CURRENT_BINARY_DIR}/preprocessor-python-image-example/preprocessor-python-image-example
+    ${CMAKE_CURRENT_BINARY_DIR}/preprocessor-python-tensor-example/preprocessor-python-tensor-example
     DESTINATION /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/preprocessors/
 )

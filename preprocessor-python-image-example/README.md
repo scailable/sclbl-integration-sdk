@@ -50,9 +50,19 @@ Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugin
 {
     "externalPreprocessors": [
         {
-            "Name":"Example-Preprocessor",
-            "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/preprocessors/preprocessor-python-example",
-            "SocketPath":"/tmp/example-preprocessor.sock"
+            "Name":"Example-Image-Preprocessor",
+            "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/preprocessors/preprocessor-python-image-example",
+            "SocketPath":"/tmp/example-image-preprocessor.sock",
+            "Schedule":"IMAGE",
+            "Settings": [
+                {
+                    "type": "SwitchButton",
+                    "name": "externalprocessor.mirrorimage",
+                    "caption": "Mirror Image",
+                    "description": "When this switch is active the input image to the AI Manager will be mirrored.",
+                    "defaultValue": true
+                }
+            ]
         }
     ]
 }
@@ -62,8 +72,20 @@ This tells the Edge AI Manager about the preprocessor:
 - **Name** gives the preprocesor a name so it can be selected later
 - **Command** defines how to start the preprocessor
 - **SocketPath** tells the AI Manager where to send data to so the external preprocessor will receive it
+- **Schedule** controls during which stage of the preprocessing pipeline the data is passed to the external processor. See #Schedules
 
 The socket path is always given as the first command line argument when the application is started. It is therefore best practice for the external preprocessor application to read its socket path from here, instead of defining the data twice.
+
+## Schedules
+
+Schedules control during which stage of the processing pipeline the data will be passed to the external processor.
+
+Available schedules are:
+
+- **IMAGE**: The data will be passed to the external processor before any processing is done. The external processor will receive the raw image as it is received by the AI Manager. 
+The returned image, if any, will then be resized, normalized, and cast to the specifications of the model.
+- **TENSOR**: The data will be passed to the external processor after the image is processed. The external processor will receive a tensor structure containing the data of the processed image. 
+The external processor has the option of adding/removing/renaming tensors which will be passed to the model.
 
 ## Selecting to the preprocessor
 
