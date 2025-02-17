@@ -20,6 +20,14 @@ CONFIG_FILE = os.path.join(script_location, "..", "etc", "plugin.image.example.i
 # Set up logging
 LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.image.example.log")
 
+# Initialize plugin and logging, script makes use of INFO and DEBUG levels
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - example - %(message)s",
+    filename=LOG_FILE,
+    filemode="w",
+)
+
 # The socket this preprocessor will listen on.
 # This is always given as the first argument when the process is started
 # But it can be manually defined as well, as long as it is the same as the socket path in the runtime settings
