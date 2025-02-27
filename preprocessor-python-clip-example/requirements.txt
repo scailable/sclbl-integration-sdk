@@ -1,0 +1,7 @@
+nuitka
+pillow
+msgpack
+instant_clip_tokenizer
+numpy
+requests
+sysv_ipc
