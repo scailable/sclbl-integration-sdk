@@ -7,10 +7,7 @@ import logging.handlers
 import configparser
 
 # Add the nxai-utilities python utilities
-if getattr(sys, "frozen", False):
-    script_location = os.path.dirname(sys.executable)
-elif __file__:
-    script_location = os.path.dirname(__file__)
+script_location = os.path.dirname(sys.argv[0])
 sys.path.append(os.path.join(script_location, "../nxai-utilities/python-utilities"))
 import communication_utils
 
@@ -159,7 +156,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         Postprocessor_Socket_Path = sys.argv[1]
     # Handle interrupt signals
-    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
     # Start program
     try:
         main()

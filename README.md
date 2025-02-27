@@ -39,6 +39,7 @@ For the python pre/postprocessors the following is also required
 ```shell
 sudo apt install python3-pip
 sudo apt install python3.12-venv
+sudo apt install patchelf
 ```
 
 ## Requirements to run the pre/postprocessors

@@ -1,5 +1,5 @@
 # Add target to build everything at once
-set(PROCESSOR_NAME "postprocessor-python-edgeimpulse-example")
+set(PROCESSOR_NAME "preprocessor-python-clip-example")
 add_custom_target(${PROCESSOR_NAME} ALL
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMAND pip install -r ../nxai-utilities/python-utilities/requirements.txt
