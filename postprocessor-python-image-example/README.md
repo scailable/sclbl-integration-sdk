@@ -208,7 +208,13 @@ Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugin
             "Name":"Example-Postprocessor",
             "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-python-image-example",
             "SocketPath":"/tmp/python-image-postprocessor.sock",
-            "ReceiveInputTensor": true
+            "ReceiveInputTensor": true,
+            "Objects": [
+                {
+                    "ID":"test",
+                    "Name":"Test"
+                }
+            ]
         }
     ]
 }
