@@ -34,7 +34,7 @@ logging.basicConfig(
 # The socket this preprocessor will listen on.
 # This is always given as the first argument when the process is started
 # But it can be manually defined as well, as long as it is the same as the socket path in the runtime settings
-Preprocessor_Socket_Path = "/tmp/python-tensor-example-preprocessor.sock"
+Preprocessor_Socket_Path = "/tmp/example-clip-preprocessor.sock"
 
 # Define a single SHM object to share images back to AI Manager
 global output_shm

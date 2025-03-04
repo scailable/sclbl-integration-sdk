@@ -69,7 +69,7 @@ Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugin
 {
     "externalPreprocessors": [
         {
-            "Name": "Example-Clip-Preprocessor",
+            "Name": "Example-Preprocessor-Clip",
             "Command": "/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/preprocessors/preprocessor-python-clip-example",
             "SocketPath": "/tmp/example-clip-preprocessor.sock",
             "Schedule": "TENSOR",

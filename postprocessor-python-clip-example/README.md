@@ -202,9 +202,9 @@ For example:
 {
     "externalPostprocessors": [
         {
-            "Name":"Example-Postprocessor-Setting",
+            "Name":"Example-Postprocessor-Clip",
             "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-python-clip-example",
-            "SocketPath":"/tmp/python-example-clip-postprocessor.sock",
+            "SocketPath":"/tmp/example-clip-postprocessor.sock",
             "ReceiveInputTensor": false,
             "ReceiveConfidenceData": false,
             "Events": [

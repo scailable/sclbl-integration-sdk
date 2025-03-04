@@ -27,14 +27,10 @@ logging.basicConfig(
     filemode="w",
 )
 
-# The name of the postprocessor.
-# This is used to match the definition of the postprocessor with routing.
-Postprocessor_Name = "Python-Example-Clip-Postprocessor"
-
 # The socket this postprocessor will listen on.
 # This is always given as the first argument when the process is started
 # But it can be manually defined as well, as long as it is the same as the socket path in the runtime settings
-Postprocessor_Socket_Path = "/tmp/python-example-clip-postprocessor.sock"
+Postprocessor_Socket_Path = "/tmp/example-clip-postprocessor.sock"
 
 # Data Types
 # 1:  //FLOAT
