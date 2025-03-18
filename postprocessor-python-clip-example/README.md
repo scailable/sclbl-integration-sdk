@@ -212,6 +212,17 @@ For example:
                     "ID":"nx.clip.event",
                     "Name":"CLIP Prompt Recognized"
                 }
+            ],
+            "Settings": [
+                {
+                    "type": "SpinBox",
+                    "name": "externalprocessor.eventCooldown",
+                    "caption": "Generate event every (s):",
+                    "description": "The postprocessor won't generate an event more frequently than this, unless the state changes.",
+                    "defaultValue": 5,
+                    "minValue": 0,
+                    "maxValue": 9999999999
+                }
             ]
         }
     ]

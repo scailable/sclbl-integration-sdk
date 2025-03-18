@@ -7,6 +7,7 @@ import logging.handlers
 import configparser
 from pprint import pformat
 from collections import OrderedDict
+import time
 
 # Add the nxai-utilities python utilities
 script_location = os.path.dirname(sys.argv[0])
@@ -83,6 +84,9 @@ def signal_handler(sig, _):
 
 
 objects_attributes = OrderedDict()
+# Keep track of the last states and times we generated an event per camera
+previous_state = {}
+previous_event_time = {}
 
 
 def main():
@@ -134,6 +138,22 @@ def main():
                 ][setting_name]
         logger.info("Got prompts: " + str(prompts))
 
+        # Get event cooldown setting
+        device_id = input_object["DeviceID"]
+        event_cooldown = 0
+        if (
+            "externalprocessor.eventCooldown"
+            in input_object["ExternalProcessorSettings"]
+        ):
+            try:
+                event_cooldown = int(
+                    input_object["ExternalProcessorSettings"][
+                        "externalprocessor.eventCooldown"
+                    ]
+                )
+            except:
+                pass
+
         if "Scores" in input_object:
             # This is the output of the clip model
             # Replace the prompts with the appropriate text
@@ -152,16 +172,33 @@ def main():
                 # Remove original scores
                 del input_object["Scores"]
                 if top_score[0] != "":
-                    # Add event to output
-                    if "Events" not in input_object:
-                        input_object["Events"] = []
-                    input_object["Events"].append(
-                        {
-                            "ID": "nx.clip.event",
-                            "Caption": "CLIP Prompt Recognized",
-                            "Description": top_score[0],
-                        }
-                    )
+                    # Check if event should be added
+                    add_event = True
+                    if (
+                        device_id in previous_state
+                        and previous_state[device_id] == top_score[0]
+                    ):
+                        # State has not changed, check if timed out
+                        if (
+                            time.time() - previous_event_time[device_id]
+                        ) < event_cooldown:
+                            add_event = False
+
+                    if add_event is True:
+                        # Add event to output
+                        if "Events" not in input_object:
+                            input_object["Events"] = []
+                        input_object["Events"].append(
+                            {
+                                "ID": "nx.clip.event",
+                                "Caption": "CLIP Prompt Recognized",
+                                "Description": top_score[0],
+                            }
+                        )
+                        # Set previous state to handle event cooldowns
+                        previous_event_time[device_id] = time.time()
+                        previous_state[device_id] = top_score[0]
+
             # Check if object is feature extracted
             if "OriginalObjectID" in input_object:
                 if top_score[0] != "":
