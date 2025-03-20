@@ -15,10 +15,7 @@ from datetime import datetime
 from PIL import Image
 import edgeimpulse
 
-if getattr(sys, "frozen", False):
-    script_location = os.path.dirname(sys.executable)
-elif __file__:
-    script_location = os.path.dirname(__file__)
+script_location = os.path.dirname(sys.argv[0])
 CONFIG_FILE = os.path.join(script_location, "..", "etc", "plugin.cloud-edgeimpulse.ini")
 
 LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.cloud-edgeimpulse.log")
@@ -341,7 +338,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         Postprocessor_Socket_Path = sys.argv[1]
     # Handle interrupt signals
-    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
 
     # Start program
     try:

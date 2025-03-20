@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+import numpy as np
+import numpy.core.multiarray
+import instant_clip_tokenizer
+
 import os
 import sys
 import socket
@@ -13,10 +18,10 @@ script_location = os.path.dirname(sys.argv[0])
 sys.path.append(os.path.join(script_location, "../nxai-utilities/python-utilities"))
 import communication_utils
 
-CONFIG_FILE = os.path.join(script_location, "..", "etc", "plugin.tensor.example.ini")
+CONFIG_FILE = os.path.join(script_location, "..", "etc", "plugin.tensor.pre.ini")
 
 # Set up logging
-LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.tensor.example.log")
+LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.clip.pre.log")
 
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
 logging.basicConfig(
@@ -29,20 +34,27 @@ logging.basicConfig(
 # The socket this preprocessor will listen on.
 # This is always given as the first argument when the process is started
 # But it can be manually defined as well, as long as it is the same as the socket path in the runtime settings
-Preprocessor_Socket_Path = "/tmp/python-tensor-example-preprocessor.sock"
+Preprocessor_Socket_Path = "/tmp/example-clip-preprocessor.sock"
 
 # Define a single SHM object to share images back to AI Manager
 global output_shm
 output_shm = None
+
+tokenizer = instant_clip_tokenizer.Tokenizer()
 
 
 def parseTensorFromSHM(shm_key: int, external_settings: dict):
 
     ######### Get input tensor from SHM
     logger.info("Got shm key: " + str(shm_key))
-    tensor_raw_data = communication_utils.read_shm(shm_key)
+    try:
+        tensor_raw_data = communication_utils.read_shm(shm_key)
+    except Exception:
+        logger.error("Could not read SHM!")
+        return 0
     tensor_data = msgpack.unpackb(tensor_raw_data)
 
+    logger.info("Got external_settings: " + str(external_settings))
     if (
         tensor_data is None
         or isinstance(tensor_data, dict) == False
@@ -51,22 +63,30 @@ def parseTensorFromSHM(shm_key: int, external_settings: dict):
         logger.error("Invalid input tensor received. Ignoring.")
         return 0
 
-    ######## Get nms setting ( if any )
-
-    new_nms_value = 0.8
-    if "externalprocessor.nmsoverride" in external_settings:
-        try:
-            new_nms_value = float(external_settings["externalprocessor.nmsoverride"])
-        except:
-            pass
-
-    ######## Modify tensor as example
-
     for tensor_name, _ in tensor_data["Tensors"].items():
         logger.info("Got tensor name: " + str(tensor_name))
-        if tensor_name == "nms_sensitivity-":
-            # Set nms to new_nms_value
-            tensor_data["Tensors"][tensor_name] = struct.pack("f", new_nms_value)
+        if tensor_name == "text":
+            # Get text classes from settings
+            prompts = []
+            settings_names = sorted(list(external_settings.keys()))
+            for setting_name in settings_names:
+                if setting_name.startswith("externalprocessor.prompt"):
+                    prompts.append(external_settings[setting_name])
+            # Make sure there are enough prompts
+            while len(prompts) != 5:
+                prompts.append("")
+            logger.info("Got prompts: " + str(prompts))
+            # Tokenize prompts
+            text_tokens_np = np.array(
+                tokenizer.tokenize_batch(prompts, context_length=77), dtype=np.int32
+            )
+            # Pack the numpy array into a binary structure.
+            # Use the flattened array so that we pack all integers.
+            text_tokens_np_struct = struct.pack(
+                f"{text_tokens_np.size}i", *text_tokens_np.flatten()
+            )
+            logger.info("After struct")
+            tensor_data["Tensors"][tensor_name] = text_tokens_np_struct
 
     ######## Write modified tensor to SHM
 
@@ -126,6 +146,7 @@ def main():
 
 def signalHandler(sig, _):
     print("EXAMPLE PREPROCESSOR: Received interrupt signal: ", sig)
+    logger.info("EXAMPLE PREPROCESSOR: Received interrupt signal: " + str(sig))
     # Detach and destroy output shm
     if output_shm is not None:
         output_shm.detach()
@@ -181,4 +202,7 @@ if __name__ == "__main__":
     logger.debug("Input parameters: " + str(sys.argv))
 
     # Start program
-    main()
+    try:
+        main()
+    except Exception as e:
+        logger.error(e, exc_info=True)

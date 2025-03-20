@@ -1,13 +1,13 @@
-Socket MessagePack Postprocessor Python Image Example
-=========================
+Postprocessor Python Clip Example
+============================
 
 This example application provides an example on how to create a Python based postprocessor that can be integrated with the NXAI Edge AI Manager.
+
+This postprocessor looks for text prompts defined in the settings of the CLIP preprocessor, and will generate an event with the prompt information.
 
 # Postprocessors Control Flow
 
 The normal control flow of a postprocessor is to receive a MessagePack binary message representing the inference results from the NXAI Edge AI Manager, and return the same or an altered version of the received MessagePack message.
-
-This example will show how to access the input tensor which the inference results were generated from for additional analysis or presentation. It is possible to define the postprocessor indicating that the Edge AI Runtime should send additional information to allow the postprocessor to access the input tensor. If this setting is enabled, the Edge AI Manager will send an additional messagePack message after the inference results messages containing the relevant fields. The postprocessor should therefore expect two messages before responding.
 
 An external postprocessor can parse the incoming MessagePack message, do analysis, optionally alter it, and return it. The alterations made by an external postprocessor will be kept and sent to the Network Optix server to be represented as bounding boxes or events.
 
@@ -49,6 +49,9 @@ The incoming MessagePack message follows a specific schema. If the message is al
     },
     "Scores": {
         <"Class Name"> : <Score>
+    },
+    "ExternalProcessorSettings": {
+        <"Setting Key"> : <"Setting Value">
     }
 }
 ```
@@ -88,7 +91,7 @@ git pull --recurse-submodules
 
 ## Configuration of example postprocessor
 
-Create a [configuration file](plugin.image.ini.example) at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.image.ini` and add some overrides for the configuration.
+Create a [configuration file](plugin.example.ini.example) at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.example.ini` and add some overrides for the configuration.
 
 This plugin only supports changing the debug level between DEBUG, INFO, WARNING, ERROR and CRITICAL
 
@@ -98,14 +101,6 @@ For example:
 [common]
 debug_level=DEBUG
 ```
-
-## Use the interval based upload
-
-When the `auto_generator` is set to `True` images will be uploaded according to the value in `auto_generator_every_seconds`
-
-## Use the confidence threshold based upload
-
-When the `auto_generator` is set to `False` images will be uploaded according to the value in `p_value`
 
 ## Preparation of dependencies
 
@@ -158,14 +153,14 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/sclbl-utilities)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/sclbl-utilities/include)
 
 # Add Edge Impulse Postprocessor Python project
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/postprocessor-python-edgeimpulse-example)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/postprocessor-python-settings-example)
 
 # Add installation option
 install(TARGETS
     DESTINATION /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/
 )
 install(PROGRAMS
-    ${CMAKE_CURRENT_BINARY_DIR}/postprocessor-python-edgeimpulse-example/postprocessor-python-edgeimpulse-example
+    ${CMAKE_CURRENT_BINARY_DIR}/postprocessor-python-settings-example/postprocessor-python-settings-example
     DESTINATION /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/
 )
 ```
@@ -199,20 +194,34 @@ cmake --build . --target install
 
 ## Defining the postprocessor
 
-Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/external_postprocessors.json` and add the details of your postprocessor to the root object of that file. For example:
+Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/external_postprocessors.json` and add the details of your postprocessor to the root object of that file.
+
+For example:
 
 ``` json
 {
     "externalPostprocessors": [
         {
-            "Name":"Example-Postprocessor",
-            "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-python-image-example",
-            "SocketPath":"/tmp/python-image-postprocessor.sock",
-            "ReceiveInputTensor": true,
-            "Objects": [
+            "Name":"Example-Postprocessor-Clip",
+            "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-python-clip-example",
+            "SocketPath":"/tmp/example-clip-postprocessor.sock",
+            "ReceiveInputTensor": false,
+            "ReceiveConfidenceData": false,
+            "Events": [
                 {
-                    "ID":"test",
-                    "Name":"Test"
+                    "ID":"nx.clip.event",
+                    "Name":"CLIP Prompt Recognized"
+                }
+            ],
+            "Settings": [
+                {
+                    "type": "SpinBox",
+                    "name": "externalprocessor.eventCooldown",
+                    "caption": "Generate event every (s):",
+                    "description": "The postprocessor won't generate an event more frequently than this, unless the state changes.",
+                    "defaultValue": 5,
+                    "minValue": 0,
+                    "maxValue": 9999999999
                 }
             ]
         }
@@ -225,8 +234,18 @@ This tells the Edge AI Manager about the postprocessor:
 - **Command** defines how to start the postprocessor
 - **SocketPath** tells the AI Manager where to send data to so the external postprocessor will receive it
 - **ReceiveInputTensor** tells the AI Manager if this postprocessor expects information to access the raw input tensor data
+- **Settings** defines the settings which will appear in the plugin UI.
 
 The socket path is always given as the first command line argument when the application is started. It is therefore best practice for the external postprocessor application to read its socket path from here, instead of defining the data twice.
+
+## Defining the settings
+
+The settings should be defined as in the schema from the NetworkOptix Metadata SDK, as documented in `settings_model.md` ( included in this directory as an example ).
+
+The settings will always be sent to the external postrprocessor as a string representation, this includes integers and floats. It will be up to the external postprocessor to correctly convert these values to usable types.
+
+The `"name"` value in the settings should always start with `externalprocessor.`, otherwise they will be ignored. 
+For performance reasons, settings aren't sorted per external postprocessor. This means that if you have multiple external postprocessors each with their own settings, then each postprocessor will receive all settings for all postprocessors.
 
 ## Restarting the server
 
@@ -251,7 +270,7 @@ If the postprocessor is defined correctly, its name should appear in the list of
 There is an output log where the uploads can be tracked in real time from the server.
 
 ```shell
-tail -f /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.image.log
+tail -f /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.example.log
 ```
 
 # Licence

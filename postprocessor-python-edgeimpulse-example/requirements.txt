@@ -1,4 +1,4 @@
-pyinstaller
+nuitka
 pillow
 msgpack
 edgeimpulse

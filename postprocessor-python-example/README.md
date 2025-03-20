@@ -210,7 +210,13 @@ For example:
             "Name":"Example-Postprocessor",
             "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-python-example",
             "SocketPath":"/tmp/python-example-postprocessor.sock",
-            "ReceiveInputTensor": false
+            "ReceiveInputTensor": false,
+            "Objects": [
+                {
+                    "ID":"test",
+                    "Name":"Test"
+                }
+            ]
         }
     ]
 }

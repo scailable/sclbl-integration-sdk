@@ -80,7 +80,13 @@ Create a configuration file at `/opt/networkoptix-metavms/mediaserver/bin/plugin
             "Command":"/opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/postprocessor-c-raw-example",
             "SocketPath":"/tmp/example-raw-postprocessor.sock",
             "ReceiveInputTensor": false,
-            "ReceiveBinaryData": true
+            "ReceiveBinaryData": true,
+            "Objects": [
+                {
+                    "ID":"test",
+                    "Name":"Test"
+                }
+            ]
         }
     ]
 }

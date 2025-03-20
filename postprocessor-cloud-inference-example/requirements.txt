@@ -1,4 +1,4 @@
-pyinstaller
+nuitka
 msgpack
 pillow
 numpy
