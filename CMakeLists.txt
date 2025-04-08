@@ -75,7 +75,7 @@ install(PROGRAMS
 # Install preprocessors
 install(PROGRAMS
     ${CMAKE_CURRENT_BINARY_DIR}/preprocessor-python-image-example/preprocessor-python-image-example
-    ${CMAKE_CURRENT_BINARY_DIR}/preprocessor-python-image-example/preprocessor-python-image-example
+    ${CMAKE_CURRENT_BINARY_DIR}/preprocessor-python-tensor-example/preprocessor-python-tensor-example
     ${CMAKE_CURRENT_BINARY_DIR}/preprocessor-python-clip-example/preprocessor-python-clip-example
     DESTINATION /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/preprocessors/
     #DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../plugin-testing/TestInputs/ExternalProcessors/x86_64/
