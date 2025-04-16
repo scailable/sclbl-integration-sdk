@@ -115,7 +115,7 @@ Install the needed dependencies
 sudo apt install cmake
 sudo apt install g++
 sudo apt install python3-pip
-sudo apt install python3.12-venv
+sudo apt install patchelf
 ```
 
 Change into the directory created for the project if you're not already there.
@@ -157,20 +157,20 @@ project(sclbl-integration-examples)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/sclbl-utilities)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/sclbl-utilities/include)
 
-# Add Edge Impulse Postprocessor Python project
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/postprocessor-python-edgeimpulse-example)
+# Add Events Postprocessor Python project
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/postprocessor-python-events-example)
 
 # Add installation option
 install(TARGETS
     DESTINATION /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/
 )
 install(PROGRAMS
-    ${CMAKE_CURRENT_BINARY_DIR}/postprocessor-python-edgeimpulse-example/postprocessor-python-edgeimpulse-example
+    ${CMAKE_CURRENT_BINARY_DIR}/postprocessor-python-events-example/postprocessor-python-events-example
     DESTINATION /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/postprocessors/
 )
 ```
 
-## Compile the postprocessor in python
+## Compile the postprocessor
 
 Build the postprocessor, while in the created *build* directory. This may take a while, depending on the speed of your system.
 
@@ -254,9 +254,9 @@ If the postprocessor is defined correctly, its name should appear in the list of
 There is an output log where the uploads can be tracked in real time from the server.
 
 ```shell
-tail -f /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.example.log
+tail -f /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/nxai_manager/etc/plugin.events.example.log
 ```
 
 # Licence
 
-Copyright 2024, Network Optix, All rights reserved.
+Copyright 2025, Network Optix, All rights reserved.

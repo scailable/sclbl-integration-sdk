@@ -13,10 +13,10 @@ script_location = os.path.dirname(sys.argv[0])
 sys.path.append(os.path.join(script_location, "../nxai-utilities/python-utilities"))
 import communication_utils
 
-CONFIG_FILE = os.path.join(script_location, "..", "etc", "plugin.tensor.example.ini")
+CONFIG_FILE = os.path.join(script_location, "..", "etc", "plugin.tensor.pre.ini")
 
 # Set up logging
-LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.tensor.example.log")
+LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.tensor.pre.log")
 
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
 logging.basicConfig(
@@ -43,11 +43,7 @@ def parseTensorFromSHM(shm_key: int, external_settings: dict):
     tensor_raw_data = communication_utils.read_shm(shm_key)
     tensor_data = msgpack.unpackb(tensor_raw_data)
 
-    if (
-        tensor_data is None
-        or isinstance(tensor_data, dict) == False
-        or "Tensors" not in tensor_data
-    ):
+    if tensor_data is None or isinstance(tensor_data, dict) == False or "Tensors" not in tensor_data:
         logger.error("Invalid input tensor received. Ignoring.")
         return 0
 
@@ -77,12 +73,7 @@ def parseTensorFromSHM(shm_key: int, external_settings: dict):
         # Can reuse SHM ( if data is smaller or equal size ) or create new SHM and return ID
         output_data_size = len(output_data)
         output_shm = communication_utils.create_shm(output_data_size)
-        logger.debug(
-            "Created SHM with ID: "
-            + str(output_shm.id)
-            + " and size: "
-            + str(output_shm.size)
-        )
+        logger.debug("Created SHM with ID: " + str(output_shm.id) + " and size: " + str(output_shm.size))
 
     communication_utils.write_shm(output_shm, output_data)
 
@@ -106,9 +97,7 @@ def main():
 
         external_settings = {}
         if "ExternalProcessorSettings" in tensor_header:
-            logger.info(
-                "Got settings: " + str(tensor_header["ExternalProcessorSettings"])
-            )
+            logger.info("Got settings: " + str(tensor_header["ExternalProcessorSettings"]))
             external_settings = tensor_header["ExternalProcessorSettings"]
 
         # Process image
@@ -140,9 +129,7 @@ def config():
         configuration = configparser.ConfigParser()
         configuration.read(CONFIG_FILE)
 
-        configured_log_level = configuration.get(
-            "common", "debug_level", fallback="INFO"
-        )
+        configured_log_level = configuration.get("common", "debug_level", fallback="INFO")
         set_log_level(configured_log_level)
 
         for section in configuration.sections():

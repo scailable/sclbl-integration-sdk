@@ -1,4 +1,4 @@
-Socket MessagePack Preprocessor Python Image Example
+Preprocessor Python Image Example
 =========================
 
 This example application provides an example on how to create a Python based preprocessor that can be integrated with the NXAI Edge AI Manager.
@@ -10,7 +10,6 @@ This example reads an image from the AI Manager and will mirror the image horizo
 The normal control flow of a preprocessor is to receive a MessagePack binary message header from the AI Manager. This message will contain information on how to connect to a Shared Memory segment which contains the input image to the AI Manager.
 
 The AI Manager will send the input image to the external postprocessors before following any of its own preprocessing steps, such as resizing and normalization. This allows for the external postprocessor to operate on the original image before the rest of the pipeline. 
-For example, if an input stream to the AI Manager is YUV420, when RGB is required, a preprocessor could be added to intercept the original YUV420 image, and convert it to RGB instead.
 
 The external preprocessor could write back an altered image to the shared memory segment sent by the AI Manager, or create a new shared memory segment and write a new image to the new segment. 
 
@@ -93,4 +92,4 @@ If the preprocessor is defined correctly, its name should appear in the list of 
 
 # Licence
 
-Copyright 2024, Network Optix, All rights reserved.
+Copyright 2025, Network Optix, All rights reserved.

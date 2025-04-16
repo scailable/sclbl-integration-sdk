@@ -38,7 +38,7 @@ For the python pre/postprocessors the following is also required
 
 ```shell
 sudo apt install python3-pip
-sudo apt install python3.12-venv
+sudo apt install python3-venv
 sudo apt install patchelf
 ```
 
@@ -316,4 +316,4 @@ cmake --build .
 
 # Licence
 
-Copyright 2024, Network Optix, All rights reserved.
+Copyright 2025, Network Optix, All rights reserved.

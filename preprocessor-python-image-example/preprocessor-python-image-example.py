@@ -12,10 +12,10 @@ script_location = os.path.dirname(sys.argv[0])
 sys.path.append(os.path.join(script_location, "../nxai-utilities/python-utilities"))
 import communication_utils
 
-CONFIG_FILE = os.path.join(script_location, "..", "etc", "plugin.image.example.ini")
+CONFIG_FILE = os.path.join(script_location, "..", "etc", "plugin.image.pre.ini")
 
 # Set up logging
-LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.image.example.log")
+LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.image.pre.log")
 
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
 logging.basicConfig(
@@ -35,17 +35,13 @@ global output_shm
 output_shm = None
 
 
-def parseImageFromSHM(
-    shm_key: int, width: int, height: int, channels: int, external_settings: dict
-):
+def parseImageFromSHM(shm_key: int, width: int, height: int, channels: int, external_settings: dict):
     global output_shm
     if output_shm is None:
         # Can reuse SHM ( if data is smaller or equal size ) or create new SHM and return ID
         input_image_size = width * height * channels
         output_shm = communication_utils.create_shm(input_image_size)
-        print(
-            "EXAMPLE PLUGIN Created shm ID: ", output_shm.id, "Size:", output_shm.size
-        )
+        print("EXAMPLE PLUGIN Created shm ID: ", output_shm.id, "Size:", output_shm.size)
 
     # Read image data from the shared memory
     image_data = communication_utils.read_shm(shm_key)
@@ -63,15 +59,9 @@ def parseImageFromSHM(
         # Mirror and downscale image
         for h_key in range(0, height, 2):
             for w_key in range(0, width, 2):
-                output_pixel_index = int(
-                    ((h_key * width / 4) * channels) + ((w_key / 2) * channels)
-                )
-                input_pixel_index = (h_key * width * channels) + (
-                    (width - w_key) * channels
-                )
-                output_image[output_pixel_index : output_pixel_index + channels] = (
-                    image_data[input_pixel_index : input_pixel_index + channels]
-                )
+                output_pixel_index = int(((h_key * width / 4) * channels) + ((w_key / 2) * channels))
+                input_pixel_index = (h_key * width * channels) + ((width - w_key) * channels)
+                output_image[output_pixel_index : output_pixel_index + channels] = image_data[input_pixel_index : input_pixel_index + channels]
     else:
         # Return unmodified iamge
         output_image = image_data
@@ -101,9 +91,7 @@ def main():
 
         external_settings = {}
         if "ExternalProcessorSettings" in image_header:
-            logger.info(
-                "Got settings: " + str(image_header["ExternalProcessorSettings"])
-            )
+            logger.info("Got settings: " + str(image_header["ExternalProcessorSettings"]))
             external_settings = image_header["ExternalProcessorSettings"]
 
         # Process image
@@ -143,9 +131,7 @@ def config():
         configuration = configparser.ConfigParser()
         configuration.read(CONFIG_FILE)
 
-        configured_log_level = configuration.get(
-            "common", "debug_level", fallback="INFO"
-        )
+        configured_log_level = configuration.get("common", "debug_level", fallback="INFO")
         set_log_level(configured_log_level)
 
         for section in configuration.sections():
