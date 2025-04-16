@@ -108,4 +108,4 @@ If the postprocessor is defined correctly, its name should appear in the list of
 
 # Licence
 
-Copyright 2024, Network Optix, All rights reserved.
+Copyright 2025, Network Optix, All rights reserved.

@@ -1,4 +1,4 @@
-Socket MessagePack Preprocessor Python Tensor Example
+Preprocessor Python Tensor Example
 =========================
 
 This example application provides an example on how to create a Python based preprocessor that can be integrated with the NXAI Edge AI Manager.
@@ -112,4 +112,4 @@ If the preprocessor is defined correctly, its name should appear in the list of 
 
 # Licence
 
-Copyright 2024, Network Optix, All rights reserved.
+Copyright 2025, Network Optix, All rights reserved.
