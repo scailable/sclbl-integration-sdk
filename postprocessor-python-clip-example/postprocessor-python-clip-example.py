@@ -18,7 +18,10 @@ import communication_utils
 CONFIG_FILE = os.path.join(script_location, "..", "etc", "plugin.clip.post.ini")
 
 # Set up logging
-LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.clip.post.log")
+if os.path.exists(os.path.join(script_location, "..", "etc")):
+    LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.clip.post.log")
+else:
+    LOG_FILE = os.path.join(script_location, "plugin.clip.post.log")
 
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
 logging.basicConfig(
@@ -55,9 +58,7 @@ def config():
         configuration = configparser.ConfigParser()
         configuration.read(CONFIG_FILE)
 
-        configured_log_level = configuration.get(
-            "common", "debug_level", fallback="INFO"
-        )
+        configured_log_level = configuration.get("common", "debug_level", fallback="INFO")
         set_log_level(configured_log_level)
 
         for section in configuration.sections():
@@ -121,36 +122,23 @@ def main():
                 for index, id in enumerate(class_data["ObjectIDs"]):
                     if id in objects_attributes:
                         logger.info("Found ID " + objects_attributes[id])
-                        class_data["AttributeKeys"][index].append(
-                            objects_attributes[id]
-                        )
-                        class_data["AttributeValues"][index].append(
-                            objects_attributes[id]
-                        )
+                        class_data["AttributeKeys"][index].append(objects_attributes[id])
+                        class_data["AttributeValues"][index].append(objects_attributes[id])
 
         # Get prompts from settings
         prompts = {}
         settings_names = sorted(list(input_object["ExternalProcessorSettings"].keys()))
         for setting_name in settings_names:
             if setting_name.startswith("externalprocessor.prompt"):
-                prompts[setting_name.replace("externalprocessor.", "")] = input_object[
-                    "ExternalProcessorSettings"
-                ][setting_name]
+                prompts[setting_name.replace("externalprocessor.", "")] = input_object["ExternalProcessorSettings"][setting_name]
         logger.info("Got prompts: " + str(prompts))
 
         # Get event cooldown setting
         device_id = input_object["DeviceID"]
         event_cooldown = 0
-        if (
-            "externalprocessor.eventCooldown"
-            in input_object["ExternalProcessorSettings"]
-        ):
+        if "externalprocessor.eventCooldown" in input_object["ExternalProcessorSettings"]:
             try:
-                event_cooldown = int(
-                    input_object["ExternalProcessorSettings"][
-                        "externalprocessor.eventCooldown"
-                    ]
-                )
+                event_cooldown = int(input_object["ExternalProcessorSettings"]["externalprocessor.eventCooldown"])
             except:
                 pass
 
@@ -174,14 +162,9 @@ def main():
                 if top_score[0] != "":
                     # Check if event should be added
                     add_event = True
-                    if (
-                        device_id in previous_state
-                        and previous_state[device_id] == top_score[0]
-                    ):
+                    if device_id in previous_state and previous_state[device_id] == top_score[0]:
                         # State has not changed, check if timed out
-                        if (
-                            time.time() - previous_event_time[device_id]
-                        ) < event_cooldown:
+                        if (time.time() - previous_event_time[device_id]) < event_cooldown:
                             add_event = False
 
                     if add_event is True:
@@ -215,9 +198,7 @@ def main():
 
         # Remove objects
         while len(objects_attributes) > 100:
-            logger.info(
-                "Popping item from objects_attributes " + str(len(objects_attributes))
-            )
+            logger.info("Popping item from objects_attributes " + str(len(objects_attributes)))
             objects_attributes.popitem(False)
 
 
@@ -243,3 +224,11 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         logger.error(e, exc_info=True)
+    except KeyboardInterrupt:
+        logger.info("Exited with keyboard interrupt")
+
+    try:
+        os.unlink(Postprocessor_Socket_Path)
+    except OSError:
+        if os.path.exists(Postprocessor_Socket_Path):
+            logger.error("Could not remove socket file: " + Postprocessor_Socket_Path)

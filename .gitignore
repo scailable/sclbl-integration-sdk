@@ -4,3 +4,4 @@ build
 *.spec
 .idea/
 nxai_venv
+*.log

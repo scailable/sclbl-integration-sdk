@@ -20,7 +20,10 @@ import communication_utils
 CONFIG_FILE = os.path.join(script_location, "..", "etc", "plugin.cloud-inference.ini")
 
 # Set up logging
-LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.cloud-inference.log")
+if os.path.exists(os.path.join(script_location, "..", "etc")):
+    LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.cloud-inference.log")
+else:
+    LOG_FILE = os.path.join(script_location, "plugin.cloud-inference.log")
 
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
 logging.basicConfig(
@@ -45,9 +48,7 @@ def parse_image_from_shm(shm_key: int, width: int, height: int, channels: int):
         image_data = communication_utils.read_shm(shm_key)
         image_size = width * height * channels
         image_array = list(struct.unpack("B" * image_size, image_data))
-        image_array = (
-            np.array(image_array).reshape((height, width, channels)).astype("uint8")
-        )
+        image_array = np.array(image_array).reshape((height, width, channels)).astype("uint8")
     except Exception as e:
         logger.debug("Failed to parse image from shared memory: ", e)
         return None
@@ -68,9 +69,7 @@ def config():
         configuration = configparser.ConfigParser()
         configuration.read(CONFIG_FILE)
 
-        configured_log_level = configuration.get(
-            "common", "debug_level", fallback="INFO"
-        )
+        configured_log_level = configuration.get("common", "debug_level", fallback="INFO")
         set_log_level(configured_log_level)
 
         for section in configuration.sections():
@@ -78,12 +77,8 @@ def config():
             for key in configuration[section]:
                 logger.info("config key: " + key + " = " + configuration[section][key])
 
-        aws_access_key_id = configuration.get(
-            "cloud", "aws_access_key_id", fallback=False
-        )
-        aws_secret_access_key = configuration.get(
-            "cloud", "aws_secret_access_key", fallback=False
-        )
+        aws_access_key_id = configuration.get("cloud", "aws_access_key_id", fallback=False)
+        aws_secret_access_key = configuration.get("cloud", "aws_secret_access_key", fallback=False)
         region_name = configuration.get("cloud", "region_name", fallback=False)
         image_path = configuration.get(
             "inference",
@@ -228,3 +223,11 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         logger.error(e, exc_info=True)
+    except KeyboardInterrupt:
+        logger.info("Exited with keyboard interrupt")
+
+    try:
+        os.unlink(Postprocessor_Socket_Path)
+    except OSError:
+        if os.path.exists(Postprocessor_Socket_Path):
+            logger.error("Could not remove socket file: " + Postprocessor_Socket_Path)
