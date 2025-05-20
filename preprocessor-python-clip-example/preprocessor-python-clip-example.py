@@ -21,7 +21,10 @@ import communication_utils
 CONFIG_FILE = os.path.join(script_location, "..", "etc", "plugin.tensor.pre.ini")
 
 # Set up logging
-LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.clip.pre.log")
+if os.path.exists(os.path.join(script_location, "..", "etc")):
+    LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.clip.pre.log")
+else:
+    LOG_FILE = os.path.join(script_location, "plugin.clip.pre.log")
 
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
 logging.basicConfig(
@@ -55,11 +58,7 @@ def parseTensorFromSHM(shm_key: int, external_settings: dict):
     tensor_data = msgpack.unpackb(tensor_raw_data)
 
     logger.info("Got external_settings: " + str(external_settings))
-    if (
-        tensor_data is None
-        or isinstance(tensor_data, dict) == False
-        or "Tensors" not in tensor_data
-    ):
+    if tensor_data is None or isinstance(tensor_data, dict) == False or "Tensors" not in tensor_data:
         logger.error("Invalid input tensor received. Ignoring.")
         return 0
 
@@ -77,14 +76,10 @@ def parseTensorFromSHM(shm_key: int, external_settings: dict):
                 prompts.append("")
             logger.info("Got prompts: " + str(prompts))
             # Tokenize prompts
-            text_tokens_np = np.array(
-                tokenizer.tokenize_batch(prompts, context_length=77), dtype=np.int32
-            )
+            text_tokens_np = np.array(tokenizer.tokenize_batch(prompts, context_length=77), dtype=np.int32)
             # Pack the numpy array into a binary structure.
             # Use the flattened array so that we pack all integers.
-            text_tokens_np_struct = struct.pack(
-                f"{text_tokens_np.size}i", *text_tokens_np.flatten()
-            )
+            text_tokens_np_struct = struct.pack(f"{text_tokens_np.size}i", *text_tokens_np.flatten())
             logger.info("After struct")
             tensor_data["Tensors"][tensor_name] = text_tokens_np_struct
 
@@ -97,12 +92,7 @@ def parseTensorFromSHM(shm_key: int, external_settings: dict):
         # Can reuse SHM ( if data is smaller or equal size ) or create new SHM and return ID
         output_data_size = len(output_data)
         output_shm = communication_utils.create_shm(output_data_size)
-        logger.debug(
-            "Created SHM with ID: "
-            + str(output_shm.id)
-            + " and size: "
-            + str(output_shm.size)
-        )
+        logger.debug("Created SHM with ID: " + str(output_shm.id) + " and size: " + str(output_shm.size))
 
     communication_utils.write_shm(output_shm, output_data)
 
@@ -126,9 +116,7 @@ def main():
 
         external_settings = {}
         if "ExternalProcessorSettings" in tensor_header:
-            logger.info(
-                "Got settings: " + str(tensor_header["ExternalProcessorSettings"])
-            )
+            logger.info("Got settings: " + str(tensor_header["ExternalProcessorSettings"]))
             external_settings = tensor_header["ExternalProcessorSettings"]
 
         # Process image
@@ -161,9 +149,7 @@ def config():
         configuration = configparser.ConfigParser()
         configuration.read(CONFIG_FILE)
 
-        configured_log_level = configuration.get(
-            "common", "debug_level", fallback="INFO"
-        )
+        configured_log_level = configuration.get("common", "debug_level", fallback="INFO")
         set_log_level(configured_log_level)
 
         for section in configuration.sections():
@@ -206,3 +192,11 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         logger.error(e, exc_info=True)
+    except KeyboardInterrupt:
+        logger.info("Exited with keyboard interrupt")
+
+    try:
+        os.unlink(Preprocessor_Socket_Path)
+    except OSError:
+        if os.path.exists(Preprocessor_Socket_Path):
+            logger.error("Could not remove socket file: " + Preprocessor_Socket_Path)

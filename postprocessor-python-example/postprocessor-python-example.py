@@ -5,6 +5,7 @@ import signal
 import logging
 import logging.handlers
 import configparser
+from pprint import pformat
 
 # Add the nxai-utilities python utilities
 script_location = os.path.dirname(sys.argv[0])
@@ -15,7 +16,10 @@ import communication_utils
 CONFIG_FILE = os.path.join(script_location, "..", "etc", "plugin.example.ini")
 
 # Set up logging
-LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.example.log")
+if os.path.exists(os.path.join(script_location, "..", "etc")):
+    LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.example.log")
+else:
+    LOG_FILE = os.path.join(script_location, "plugin.example.log")
 
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
 logging.basicConfig(
@@ -56,9 +60,7 @@ def config():
         configuration = configparser.ConfigParser()
         configuration.read(CONFIG_FILE)
 
-        configured_log_level = configuration.get(
-            "common", "debug_level", fallback="INFO"
-        )
+        configured_log_level = configuration.get("common", "debug_level", fallback="INFO")
         set_log_level(configured_log_level)
 
         for section in configuration.sections():
@@ -74,7 +76,7 @@ def config():
 
 def set_log_level(level):
     try:
-        logger.setLevel(level)
+        logger.setLevel(logging.DEBUG)
     except Exception as e:
         logger.error(e, exc_info=True)
 
@@ -104,13 +106,13 @@ def main():
         input_object = communication_utils.parseInferenceResults(input_message)
 
         # Use pformat to format the deep object
-        # formatted_unpacked_object = pformat(input_object)
-        # logging.debug(f'Unpacked:\n\n{formatted_unpacked_object}\n\n')
+        formatted_unpacked_object = pformat(input_object)
+        print(f"Unpacked:\n\n{formatted_unpacked_object}\n\n")
 
         # Add extra bbox
         if "BBoxes_xyxy" not in input_object:
             input_object["BBoxes_xyxy"] = {}
-        input_object["BBoxes_xyxy"]["test"] = [100.0, 100.0, 200.0, 200.0]
+        input_object["BBoxes_xyxy"]["test"] = [100.0, 100.0, 400.0, 400.0]
 
         logger.info("Added test bounding box to output")
 
@@ -141,3 +143,11 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         logger.error(e, exc_info=True)
+    except KeyboardInterrupt:
+        logger.info("Exited with keyboard interrupt")
+
+    try:
+        os.unlink(Postprocessor_Socket_Path)
+    except OSError:
+        if os.path.exists(Postprocessor_Socket_Path):
+            logger.error("Could not remove socket file: " + Postprocessor_Socket_Path)

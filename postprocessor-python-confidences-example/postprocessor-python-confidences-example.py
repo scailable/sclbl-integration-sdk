@@ -15,7 +15,10 @@ import communication_utils
 CONFIG_FILE = os.path.join(script_location, "..", "etc", "plugin.confidence.ini")
 
 # Set up logging
-LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.confidence.log")
+if os.path.exists(os.path.join(script_location, "..", "etc")):
+    LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.confidence.log")
+else:
+    LOG_FILE = os.path.join(script_location, "plugin.confidence.log")
 
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
 logging.basicConfig(
@@ -56,9 +59,7 @@ def config():
         configuration = configparser.ConfigParser()
         configuration.read(CONFIG_FILE)
 
-        configured_log_level = configuration.get(
-            "common", "debug_level", fallback="INFO"
-        )
+        configured_log_level = configuration.get("common", "debug_level", fallback="INFO")
         set_log_level(configured_log_level)
 
         for section in configuration.sections():
@@ -110,9 +111,7 @@ def main():
         # Add the confidence of each object as attributes
         for _, class_data in input_object["ObjectsMetaData"].items():
             for object_index in range(len(class_data["Confidences"])):
-                confidence_string = str(
-                    round(class_data["Confidences"][object_index], 2)
-                )
+                confidence_string = str(round(class_data["Confidences"][object_index], 2))
                 class_data["AttributeKeys"][object_index].append("Confidence")
                 class_data["AttributeValues"][object_index].append(confidence_string)
 
@@ -147,3 +146,11 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         logger.error(e, exc_info=True)
+    except KeyboardInterrupt:
+        logger.info("Exited with keyboard interrupt")
+
+    try:
+        os.unlink(Postprocessor_Socket_Path)
+    except OSError:
+        if os.path.exists(Postprocessor_Socket_Path):
+            logger.error("Could not remove socket file: " + Postprocessor_Socket_Path)

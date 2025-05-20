@@ -15,7 +15,10 @@ import communication_utils
 CONFIG_FILE = os.path.join(script_location, "..", "etc", "plugin.events.ini")
 
 # Set up logging
-LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.events.log")
+if os.path.exists(os.path.join(script_location, "..", "etc")):
+    LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.events.log")
+else:
+    LOG_FILE = os.path.join(script_location, "plugin.events.log")
 
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
 logging.basicConfig(
@@ -56,9 +59,7 @@ def config():
         configuration = configparser.ConfigParser()
         configuration.read(CONFIG_FILE)
 
-        configured_log_level = configuration.get(
-            "common", "debug_level", fallback="INFO"
-        )
+        configured_log_level = configuration.get("common", "debug_level", fallback="INFO")
         set_log_level(configured_log_level)
 
         for section in configuration.sections():
@@ -114,13 +115,7 @@ def main():
                 if objects_detected is False and len(class_coordinates) > 0:
                     description_string = "\nThere are"
                     objects_detected = True
-                description_string += (
-                    " "
-                    + str(int(len(class_coordinates) / 4))
-                    + " "
-                    + class_name
-                    + "'s in the frame"
-                )
+                description_string += " " + str(int(len(class_coordinates) / 4)) + " " + class_name + "'s in the frame"
 
         # Add event to output
         if "Events" not in input_object:
@@ -162,3 +157,11 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         logger.error(e, exc_info=True)
+    except KeyboardInterrupt:
+        logger.info("Exited with keyboard interrupt")
+
+    try:
+        os.unlink(Postprocessor_Socket_Path)
+    except OSError:
+        if os.path.exists(Postprocessor_Socket_Path):
+            logger.error("Could not remove socket file: " + Postprocessor_Socket_Path)
