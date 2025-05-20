@@ -182,22 +182,18 @@ sudo chmod -R a+x /opt/networkoptix-metavms/mediaserver/bin/plugins/nxai_plugin/
 
 If the pre/postprocessor is defined correctly, its name should appear in the list of pre/postprocessors in the NX Cloud Pipelines UI. If it is selected in the pipeline settings then the NxAI Manager will send data to the pre/postprocessor and wait for its output.
 
-# Troubleshooting
+# Development
 
-## Failed to load Python shared library
+For fast iterative development it is often desired not to fully recompile the postprocessor to have it reloaded. 
 
-If you encounter a bug similar to the following:
+Functionality has therefore been added to instruct the AI Manager not to start the external postprocessor, but instead assume it's running.
+The AI Manager will then attempt to send data to the external processor each frame, and wait for a response.
+You can then start the processor yourself to immediately see its effect.
+You can also print/manipulate data easily to get familiar with the format of the data that the processor receives. 
 
-```
-[PYI-1002328:ERROR] Failed to load Python shared library '/tmp/_MEIse5hvf/libpython3.x.so': dlopen: /tmp/_MEIse5hvf/libpython3.x.so: cannot open shared object file: No such file or directory
-```
+Once you are satisfied with how your processor behaves, you can then compile and package it.
 
-This is due to a bug in PyInstaller. PyInstaller is used in this repository only for demonstrative purposes, and is not strictly necessary or even the best tool for your project.
-
-It is often sufficient to recompile the pre/postprocessors by running:
-```shell
-cmake --build .
-```
+To instruct the AI Manager to not start the external processor, simply omit the "Command" field in the processor definition.
 
 # Directory structure
 
