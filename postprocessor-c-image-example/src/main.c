@@ -211,7 +211,7 @@ char *processMpackDocument( const char *input_buffer, size_t input_buffer_length
     for ( size_t index = 0; index < num_bboxs; index++ ) {
         free( bboxs[index].class_name );
         free( bboxs[index].coordinates );
-        free( bboxs[index].scores );
+        free( bboxs[index].confidences );
     }
     free( bboxs );
 

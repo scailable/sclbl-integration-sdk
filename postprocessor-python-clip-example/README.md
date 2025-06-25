@@ -13,24 +13,23 @@ An external postprocessor can parse the incoming MessagePack message, do analysi
 
 An external postprocessor is a standalone application which is expected to receive these MessagePack messages and return a MessagePack message with a compatible format. Instructions can be added to a configuration file to handle executing and terminating the application.
 
+Only one external processor is started for all devices. This means that a single processor can combine data for multiple devices for deeper analysis.
+
 # MessagePack schema
 
 The incoming MessagePack message follows a specific schema. If the message is altered, the returned message must follow the same schema. In Json, this schema would look like:
 
 ```json
 {
+    "DeviceID": "<Device ID>",
+    "DeviceName": "<Device Name>",
     "Timestamp": <Timestamp>,
+    "InputIndex": <Index>,
     "Width": <Width>,
     "Height": <Height>,
-    "InputIndex": <Index>,
-    "Counts": {
-        <"Class Name">: <Class Count>
-    },
     "BBoxes_xyxy": {
-        <"Class Name">: [
-            <Coordinates>
-        ]
-    },
+        "<Class Name>": [<Float Coordinates>]
+        },
     "ObjectsMetaData": {
         <"Class Name">: {
             "ObjectIDs": [
@@ -50,11 +49,11 @@ The incoming MessagePack message follows a specific schema. If the message is al
     "Scores": {
         <"Class Name"> : <Score>
     },
-    "ExternalProcessorSettings": {
-        <"Setting Key"> : <"Setting Value">
-    }
+    "ExternalProcessorSettings": {}
 }
-```
+ ```
+
+Some fields depend on which model is assigned. If a model outputs bounding boxes, the `BBoxes_xyxy` field will be present. If a model outputs scores, the `Scores` field will be present.
 
 The image header message contains fields indicating information about the image dimensions and information to access this data:
 

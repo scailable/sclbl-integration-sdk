@@ -15,7 +15,10 @@ import communication_utils
 CONFIG_FILE = os.path.join(script_location, "..", "etc", "plugin.image.pre.ini")
 
 # Set up logging
-LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.image.pre.log")
+if os.path.exists(os.path.join(script_location, "..", "etc")):
+    LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.image.pre.log")
+else:
+    LOG_FILE = os.path.join(script_location, "plugin.image.pre.log")
 
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
 logging.basicConfig(
@@ -169,5 +172,15 @@ if __name__ == "__main__":
     logger.info("Initializing example plugin")
     logger.debug("Input parameters: " + str(sys.argv))
 
-    # Start program
-    main()
+    try:
+        main()
+    except Exception as e:
+        logger.error(e, exc_info=True)
+    except KeyboardInterrupt:
+        logger.info("Exited with keyboard interrupt")
+
+    try:
+        os.unlink(Preprocessor_Socket_Path)
+    except OSError:
+        if os.path.exists(Preprocessor_Socket_Path):
+            logger.error("Could not remove socket file: " + Preprocessor_Socket_Path)

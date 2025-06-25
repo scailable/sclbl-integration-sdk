@@ -15,7 +15,45 @@ The external preprocessor could write back an altered image to the shared memory
 
 Finally, the external postprocessor sends back a message to the AI Manager, signalling that it's completed processing. This message contains the new or same shared memory ID, image width, height and channels. These could be the same or changed. The AI Manager will read the image from the shared memory segment ID sent back to the AI Manager, and use the received image width, height and channels in the rest of the pipeline.
 
+Only one external processor is started for all devices. This means that a single processor can combine data for multiple devices for deeper analysis.
+
 # MessagePack schema
+
+```json
+{
+    "DeviceID": "<Device ID>",
+    "DeviceName": "<Device Name>",
+    "Timestamp": <Timestamp>,
+    "InputIndex": <Index>,
+    "Width": <Width>,
+    "Height": <Height>,
+    "BBoxes_xyxy": {
+        "<Class Name>": [<Float Coordinates>]
+        },
+    "ObjectsMetaData": {
+        <"Class Name">: {
+            "ObjectIDs": [
+                <16-byte UUID>,
+                <16-byte UUID>
+            ],
+            "AttributeKeys": [
+                [<Attribute Key>,<Attribute Key>],
+                [<Attribute Key>,<Attribute Key>]
+            ],
+            "AttributeValues": [
+                [<Attribute Value>,<Attribute Value>],
+                [<Attribute Value>,<Attribute Value>]
+            ]
+        }
+    },
+    "Scores": {
+        <"Class Name"> : <Score>
+    },
+    "ExternalProcessorSettings": {}
+}
+ ```
+
+Some fields depend on which model is assigned. If a model outputs bounding boxes, the `BBoxes_xyxy` field will be present. If a model outputs scores, the `Scores` field will be present.
 
 The header message sent to the external postprocessor contains information about the image and how to retrieve it through shared memory. In Json, this schema would look like:
 

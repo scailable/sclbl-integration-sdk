@@ -16,7 +16,10 @@ import communication_utils
 CONFIG_FILE = os.path.join(script_location, "..", "etc", "plugin.settings.ini")
 
 # Set up logging
-LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.settings.log")
+if os.path.exists(os.path.join(script_location, "..", "etc")):
+    LOG_FILE = os.path.join(script_location, "..", "etc", "plugin.settings.log")
+else:
+    LOG_FILE = os.path.join(script_location, "plugin.settings.log")
 
 # Initialize plugin and logging, script makes use of INFO and DEBUG levels
 logging.basicConfig(
@@ -57,9 +60,7 @@ def config():
         configuration = configparser.ConfigParser()
         configuration.read(CONFIG_FILE)
 
-        configured_log_level = configuration.get(
-            "common", "debug_level", fallback="INFO"
-        )
+        configured_log_level = configuration.get("common", "debug_level", fallback="INFO")
         set_log_level(configured_log_level)
 
         for section in configuration.sections():
@@ -112,15 +113,11 @@ def main():
         # Read the settings passed through from the AI Manager and add them as attributes
         for _, class_data in input_object["ObjectsMetaData"].items():
             for object_index in range(len(class_data["AttributeKeys"])):
-                for setting_name, setting_value in input_object[
-                    "ExternalProcessorSettings"
-                ].items():
+                for setting_name, setting_value in input_object["ExternalProcessorSettings"].items():
                     if setting_name == "externalprocessor.attributeName":
                         class_data["AttributeKeys"][object_index].append(setting_value)
                     if setting_name == "externalprocessor.attributeValue":
-                        class_data["AttributeValues"][object_index].append(
-                            setting_value
-                        )
+                        class_data["AttributeValues"][object_index].append(setting_value)
 
         formatted_unpacked_object = pformat(input_object)
         logging.info(f"Packing:\n\n{formatted_unpacked_object}\n\n")
@@ -156,3 +153,11 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         logger.error(e, exc_info=True)
+    except KeyboardInterrupt:
+        logger.info("Exited with keyboard interrupt")
+
+    try:
+        os.unlink(Postprocessor_Socket_Path)
+    except OSError:
+        if os.path.exists(Postprocessor_Socket_Path):
+            logger.error("Could not remove socket file: " + Postprocessor_Socket_Path)
